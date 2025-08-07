@@ -83,3 +83,59 @@ class _NavigationBarsState extends State<NavigationBars> {
     return navigationBar;
   }
 }
+
+class ComponentDecoration extends StatefulWidget {
+  const ComponentDecoration({
+    super.key,
+    required this.child,
+  });
+
+  final Widget child;
+
+  @override
+  State<ComponentDecoration> createState() => _ComponentDecorationState();
+}
+
+class _ComponentDecorationState extends State<ComponentDecoration> {
+  final focusNode = FocusNode();
+
+  @override
+  Widget build(BuildContext context) {
+    return RepaintBoundary(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: smallSpacing),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints.tightFor(
+            width: widthConstraint,
+          ),
+          child: Focus(
+            focusNode: focusNode,
+            canRequestFocus: true,
+            child: GestureDetector(
+              onTapDown: (_) {
+                focusNode.requestFocus();
+              },
+              behavior: HitTestBehavior.opaque,
+              child: Card(
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  side: BorderSide(
+                    color: Theme.of(context).colorScheme.outlineVariant,
+                  ),
+                  borderRadius: const BorderRadius.all(Radius.circular(12)),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 5.0,
+                    vertical: 20.0,
+                  ),
+                  child: Center(child: widget.child),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}

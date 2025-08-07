@@ -3,7 +3,7 @@ import 'package:naspend/core/constants/app_constants.dart';
 
 class HomeViewModel extends ChangeNotifier {
   // --- Trạng thái (State) ---
-  int _screenIndex = ScreenSelected.component.value;
+  int _screenIndex = ScreenSelected.dashboard.value;
   bool _showMediumSizeLayout = false;
   bool _showLargeSizeLayout = false;
   bool _controllerInitialized = false;

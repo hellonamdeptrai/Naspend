@@ -4,6 +4,7 @@ import 'package:naspend/shared/widgets/buttons.dart';
 import 'package:naspend/shared/widgets/component_screen.dart';
 import 'package:naspend/shared/widgets/expanded_trailing_actions.dart';
 import 'package:naspend/shared/widgets/navigation_transition.dart';
+import 'package:naspend/ui/dashboard/view/dashboard_screen.dart';
 import 'package:naspend/ui/home/view_model/home_view_model.dart';
 import 'package:naspend/ui/setting/view_model/theme_settings_view_model.dart';
 import 'package:provider/provider.dart';
@@ -12,10 +13,10 @@ class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeState();
+  State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeState extends State<HomeScreen> with SingleTickerProviderStateMixin {
+class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMixin {
   final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
   late final AnimationController controller;
   late final CurvedAnimation railAnimation;
@@ -46,6 +47,15 @@ class _HomeState extends State<HomeScreen> with SingleTickerProviderStateMixin {
     final double width = MediaQuery.of(context).size.width;
     context.read<HomeViewModel>().updateLayout(width, controller);
   }
+
+  Widget createScreenFor(
+      ScreenSelected screenSelected,
+      ) => switch (screenSelected) {
+    ScreenSelected.dashboard => const DashboardScreen(),
+    ScreenSelected.edit => const Text('data2'),
+    ScreenSelected.calendar => const Text('data3'),
+    ScreenSelected.setting => const Text('data4'),
+  };
 
   PreferredSizeWidget _createAppBar(ThemeSettingsViewModel themeVM) {
     final homeVM = context.read<HomeViewModel>();
@@ -96,7 +106,9 @@ class _HomeState extends State<HomeScreen> with SingleTickerProviderStateMixin {
           animationController: controller,
           railAnimation: railAnimation,
           appBar: _createAppBar(themeVM),
-          body: Container(),
+          body: createScreenFor(
+            ScreenSelected.values[homeVM.screenIndex],
+          ),
           navigationRail: NavigationRail(
             extended: homeVM.showLargeSizeLayout,
             destinations: _navRailDestinations,

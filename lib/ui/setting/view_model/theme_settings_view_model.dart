@@ -4,7 +4,7 @@ import 'package:naspend/core/constants/app_constants.dart';
 class ThemeSettingsViewModel extends ChangeNotifier {
   // --- Trạng thái ---
   ThemeMode _themeMode = ThemeMode.system;
-  ColorSeed _colorSelected = ColorSeed.baseColor;
+  ColorSeed _colorSelected = ColorSeed.yellow;
 
   // --- Getters để View truy cập trạng thái ---
   ThemeMode get themeMode => _themeMode;

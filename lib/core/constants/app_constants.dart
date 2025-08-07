@@ -24,10 +24,10 @@ enum ColorSeed {
 }
 
 enum ScreenSelected {
-  component(0),
-  color(1),
-  typography(2),
-  elevation(3);
+  dashboard(0),
+  edit(1),
+  calendar(2),
+  setting(3);
 
   const ScreenSelected(this.value);
   final int value;
