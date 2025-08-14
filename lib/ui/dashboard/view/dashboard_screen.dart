@@ -152,9 +152,7 @@ class DashboardScreen extends StatelessWidget {
                 surfaceTintColor: Colors.transparent,
                 titleSpacing: 0,
                 title: TabBar(
-                  tabs: viewModel.tabs.map((tabItem) {
-                    return Tab(text: tabItem.label);
-                  }).toList(),
+                  tabs: viewModel.tabs
                 ),
               ),
             ];
@@ -173,7 +171,9 @@ class DashboardScreen extends StatelessWidget {
                           padding: const EdgeInsets.all(8.0),
                           child: Text(
                             '${item.x}: ${item.y!.toStringAsFixed(0)}đ (${item.size!.toStringAsFixed(1)}%)',
-                            style: fonts.labelLarge!.copyWith(color: colors.onPrimary),
+                            style: fonts.labelLarge!.copyWith(
+                              color: colors.onPrimary
+                            ),
                           ),
                         );
                       },

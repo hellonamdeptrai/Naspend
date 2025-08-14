@@ -4,7 +4,6 @@ const rowDivider = SizedBox(width: 20);
 const colDivider = SizedBox(height: 10);
 const tinySpacing = 3.0;
 const smallSpacing = 10.0;
-const double cardWidth = 115;
 const double widthConstraint = 450;
 
 const List<NavigationDestination> appBarDestinations = [
@@ -87,10 +86,14 @@ class _NavigationBarsState extends State<NavigationBars> {
 class ComponentDecoration extends StatefulWidget {
   const ComponentDecoration({
     super.key,
+    this.label = '',
     required this.child,
+    this.tooltipMessage = '',
   });
 
+  final String? label;
   final Widget child;
+  final String? tooltipMessage;
 
   @override
   State<ComponentDecoration> createState() => _ComponentDecorationState();
@@ -104,38 +107,90 @@ class _ComponentDecorationState extends State<ComponentDecoration> {
     return RepaintBoundary(
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: smallSpacing),
-        child: ConstrainedBox(
-          constraints: const BoxConstraints.tightFor(
-            width: widthConstraint,
-          ),
-          child: Focus(
-            focusNode: focusNode,
-            canRequestFocus: true,
-            child: GestureDetector(
-              onTapDown: (_) {
-                focusNode.requestFocus();
-              },
-              behavior: HitTestBehavior.opaque,
-              child: Card(
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  side: BorderSide(
-                    color: Theme.of(context).colorScheme.outlineVariant,
+        child: Column(
+          children: [
+            widget.label!.isNotEmpty ? TitleTooltip(
+              label: widget.label!,
+              tooltipMessage: widget.tooltipMessage,
+            ) : Container(),
+            ConstrainedBox(
+              constraints: const BoxConstraints.tightFor(
+                width: widthConstraint,
+              ),
+              child: Focus(
+                focusNode: focusNode,
+                canRequestFocus: true,
+                child: GestureDetector(
+                  onTapDown: (_) {
+                    focusNode.requestFocus();
+                  },
+                  behavior: HitTestBehavior.opaque,
+                  child: Card(
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      side: BorderSide(
+                        color: Theme.of(context).colorScheme.outlineVariant,
+                      ),
+                      borderRadius: const BorderRadius.all(Radius.circular(12)),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 5.0,
+                        vertical: 20.0,
+                      ),
+                      child: Center(child: widget.child),
+                    ),
                   ),
-                  borderRadius: const BorderRadius.all(Radius.circular(12)),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 5.0,
-                    vertical: 20.0,
-                  ),
-                  child: Center(child: widget.child),
                 ),
               ),
             ),
-          ),
+          ],
         ),
       ),
     );
   }
+}
+
+class TitleTooltip extends StatelessWidget {
+  const TitleTooltip({
+    super.key,
+    required this.label,
+    this.tooltipMessage = '',
+  });
+
+  final String label;
+  final String? tooltipMessage;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(
+          label,
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
+        Tooltip(
+          message: tooltipMessage,
+          child: const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 5.0),
+            child: Icon(Icons.info_outline, size: 16),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+
+class ClearButton extends StatelessWidget {
+  const ClearButton({super.key, required this.controller});
+
+  final TextEditingController controller;
+
+  @override
+  Widget build(BuildContext context) => IconButton(
+    icon: const Icon(Icons.clear),
+    onPressed: () => controller.clear(),
+  );
 }

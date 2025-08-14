@@ -6,6 +6,7 @@ import 'package:naspend/shared/widgets/expanded_trailing_actions.dart';
 import 'package:naspend/shared/widgets/navigation_transition.dart';
 import 'package:naspend/ui/dashboard/view/dashboard_screen.dart';
 import 'package:naspend/ui/home/view_model/home_view_model.dart';
+import 'package:naspend/ui/note/view/note_screen.dart';
 import 'package:naspend/ui/setting/view_model/theme_settings_view_model.dart';
 import 'package:provider/provider.dart';
 
@@ -52,7 +53,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       ScreenSelected screenSelected,
       ) => switch (screenSelected) {
     ScreenSelected.dashboard => const DashboardScreen(),
-    ScreenSelected.edit => const Text('data2'),
+    ScreenSelected.edit => const NoteScreen(),
     ScreenSelected.calendar => const Text('data3'),
     ScreenSelected.setting => const Text('data4'),
   };

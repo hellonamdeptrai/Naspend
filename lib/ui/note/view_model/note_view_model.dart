@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:month_picker_dialog/month_picker_dialog.dart';
-import 'package:naspend/data/model/tab_item.dart';
+import 'package:naspend/ui/note/view/note_screen.dart';
 
-class DashboardViewModel extends ChangeNotifier {
+class NoteViewModel extends ChangeNotifier {
+  final TextEditingController controllerOutlined = TextEditingController();
+  CardInfo _selectedCard = CardInfo.camera;
+  CardInfo get selectedCard => _selectedCard;
+
   final List<Tab> tabs = <Tab>[
     Tab(text: 'Chi tiêu'),
     Tab(text: 'Thu nhập'),
@@ -34,7 +38,18 @@ class DashboardViewModel extends ChangeNotifier {
 
     if (pickedDate != null && pickedDate != _selectedDate) {
       _selectedDate = pickedDate;
-      notifyListeners(); // Thông báo cho View cập nhật
+      notifyListeners();
     }
+  }
+
+  void selectCard(CardInfo tappedCard) {
+    // --- LOGIC MỚI: Bỏ qua nếu là nút "More" ---
+    if (tappedCard == CardInfo.more) {
+      // Không làm gì liên quan đến việc chọn.
+      // Chúng ta sẽ xử lý hành động của nút "+" ở View.
+      return; // Kết thúc hàm sớm, không chạy code chọn/bỏ chọn bên dưới.
+    }
+    _selectedCard = tappedCard;
+    notifyListeners();
   }
 }
