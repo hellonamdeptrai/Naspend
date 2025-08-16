@@ -22,8 +22,12 @@ void main() {
         ),
         ChangeNotifierProvider(create: (_) => ThemeSettingsViewModel()),
         ChangeNotifierProvider(create: (_) => HomeViewModel()),
-        ChangeNotifierProvider(create: (_) => DashboardViewModel()),
-        ChangeNotifierProvider(create: (_) => NoteViewModel()),
+        ChangeNotifierProvider(create: (context) => DashboardViewModel(
+          context.read<AppDatabase>(),
+        )),
+        ChangeNotifierProvider(create: (context) => NoteViewModel(
+          context.read<AppDatabase>(),
+        )),
         ChangeNotifierProvider(create: (context) => CategoryViewModel(
           context.read<AppDatabase>(),
         )),

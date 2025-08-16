@@ -37,6 +37,16 @@ class Transactions extends Table {
   IntColumn get categoryId => integer().nullable().references(Categories, #id, onDelete: KeyAction.setNull)();
 }
 
+class TransactionWithCategory {
+  final Transaction transaction;
+  final Category category;
+
+  TransactionWithCategory({
+    required this.transaction,
+    required this.category,
+  });
+}
+
 
 @DriftDatabase(tables: [Categories, Transactions])
 class AppDatabase extends _$AppDatabase {
@@ -83,6 +93,26 @@ class AppDatabase extends _$AppDatabase {
   // Xóa một danh mục
   Future<int> deleteCategory(int id) =>
       (delete(categories)..where((tbl) => tbl.id.equals(id))).go();
+
+  Stream<List<TransactionWithCategory>> watchTransactionsInMonth(DateTime date) {
+    final startOfMonth = DateTime(date.year, date.month, 1);
+    final endOfMonth = DateTime(date.year, date.month + 1, 0, 23, 59, 59);
+
+    final query = select(transactions).join([
+      innerJoin(categories, categories.id.equalsExp(transactions.categoryId))
+    ])
+    // Lọc theo ngày giao dịch
+      ..where(transactions.transactionDate.isBetween(Constant(startOfMonth), Constant(endOfMonth)));
+
+    return query.watch().map((rows) {
+      return rows.map((row) {
+        return TransactionWithCategory(
+          transaction: row.readTable(transactions),
+          category: row.readTable(categories),
+        );
+      }).toList();
+    });
+  }
 
   static QueryExecutor _openConnection() {
     return driftDatabase(

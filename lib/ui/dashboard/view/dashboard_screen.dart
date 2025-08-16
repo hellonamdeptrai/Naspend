@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:naspend/shared/widgets/component_screen.dart';
 import 'package:naspend/ui/dashboard/view_model/dashboard_view_model.dart';
 import 'package:provider/provider.dart';
@@ -16,17 +17,10 @@ class DashboardScreen extends StatelessWidget {
     final theme = Theme.of(context);
     final fonts = theme.textTheme;
     final colors = theme.colorScheme;
+
     final viewModel = context.watch<DashboardViewModel>();
 
-    final List<ChartSampleData> _chartData = <ChartSampleData>[
-      ChartSampleData(x: 'Food', y: 23, size: 10),
-      ChartSampleData(x: 'Loan due', y: 0, size: 10),
-      ChartSampleData(x: 'Medical', y: 23, size: 10),
-      ChartSampleData(x: 'Movies', y: 0, size: 10),
-      ChartSampleData(x: 'Travel', y: 32, size: 10),
-      ChartSampleData(x: 'Savings', y: 7, size: 10),
-      ChartSampleData(x: 'Others', y: 15, size: 10),
-    ];
+    final currencyFormatter = NumberFormat.currency(locale: 'vi_VN', symbol: 'đ');
 
     return DefaultTabController(
       length: viewModel.tabs.length,
@@ -72,17 +66,16 @@ class DashboardScreen extends StatelessWidget {
                                     Expanded(
                                       child: Column(
                                         children: [
-                                          Text(
-                                            'Chi tiêu',
-                                            style: fonts.titleMedium!.copyWith(
-                                              fontWeight: FontWeight.bold
-                                            )
-                                          ),
-                                          Text(
-                                            '-100.000đ',
-                                            style: fonts.labelLarge!.copyWith(
-                                              color: colors.error
-                                            )
+                                          Text('Chi tiêu', style: fonts.titleMedium!.copyWith(fontWeight: FontWeight.bold)),
+                                          StreamBuilder<double>(
+                                            stream: viewModel.totalExpenseStream,
+                                            builder: (context, snapshot) {
+                                              final total = snapshot.data ?? 0.0;
+                                              return Text(
+                                                '-${currencyFormatter.format(total)}',
+                                                style: fonts.labelLarge!.copyWith(color: colors.error),
+                                              );
+                                            },
                                           ),
                                         ],
                                       ),
@@ -91,17 +84,16 @@ class DashboardScreen extends StatelessWidget {
                                     Expanded(
                                       child: Column(
                                         children: [
-                                          Text(
-                                            'Thu nhập',
-                                            style: fonts.titleMedium!.copyWith(
-                                              fontWeight: FontWeight.bold
-                                            )
-                                          ),
-                                          Text(
-                                            '+250.000đ',
-                                            style: fonts.labelLarge!.copyWith(
-                                              color: Colors.green
-                                            )
+                                          Text('Thu nhập', style: fonts.titleMedium!.copyWith(fontWeight: FontWeight.bold)),
+                                          StreamBuilder<double>(
+                                            stream: viewModel.totalIncomeStream,
+                                            builder: (context, snapshot) {
+                                              final total = snapshot.data ?? 0.0;
+                                              return Text(
+                                                '+${currencyFormatter.format(total)}',
+                                                style: fonts.labelLarge!.copyWith(color: Colors.green),
+                                              );
+                                            },
                                           ),
                                         ],
                                       ),
@@ -116,23 +108,22 @@ class DashboardScreen extends StatelessWidget {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Flexible(
-                                  child: Text(
-                                    'Thu chi',
-                                    style: fonts.titleMedium!.copyWith(
-                                      fontWeight: FontWeight.bold
-                                    )
-                                  )
-                                ),
+                                Flexible(child: Text('Thu chi', style: fonts.titleMedium!.copyWith(fontWeight: FontWeight.bold))),
                                 const SizedBox(width: 8),
                                 Flexible(
-                                  child: Text(
-                                    '+250.000đ',
-                                    style: fonts.titleLarge!.copyWith(
-                                      color: colors.primary,
-                                      fontWeight: FontWeight.bold
-                                    )
-                                  )
+                                  child: StreamBuilder<double>(
+                                    stream: viewModel.balanceStream,
+                                    builder: (context, snapshot) {
+                                      final balance = snapshot.data ?? 0.0;
+                                      return Text(
+                                        currencyFormatter.format(balance),
+                                        style: fonts.titleLarge!.copyWith(
+                                          color: balance >= 0 ? colors.primary : colors.error,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      );
+                                    },
+                                  ),
                                 ),
                               ],
                             )
@@ -159,54 +150,82 @@ class DashboardScreen extends StatelessWidget {
           },
           body: TabBarView(
             children: [
-              Column(
-                children: [
-                  colDivider,
-                  SfCircularChart(
-                    tooltipBehavior: TooltipBehavior(
-                      enable: true,
-                      builder: (data, point, series, pointIndex, seriesIndex) {
-                        final ChartSampleData item = data;
-                        return Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(
-                            '${item.x}: ${item.y!.toStringAsFixed(0)}đ (${item.size!.toStringAsFixed(1)}%)',
-                            style: fonts.labelLarge!.copyWith(
-                              color: colors.onPrimary
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                    series: <CircularSeries>[
-                      PieSeries<ChartSampleData, String>(
-                        dataSource: _chartData,
-                        xValueMapper: (ChartSampleData data, int index) => data.x,
-                        yValueMapper: (ChartSampleData data, int index) => data.y,
-                        dataLabelMapper: (ChartSampleData data, int index) => data.x,
-                        radius: '55%',
-                        dataLabelSettings: DataLabelSettings(
-                          isVisible: true,
-                          labelIntersectAction: LabelIntersectAction.none,
-                          labelPosition: ChartDataLabelPosition.outside,
-                          connectorLineSettings: ConnectorLineSettings(
-                            type: ConnectorType.curve,
-                          ),
-                        ),
-                      ),
-                    ],
-                  )
-                ],
+              _buildChartTab(
+                context,
+                stream: viewModel.expenseChartDataStream,
               ),
-              Column(
-                children: [
-                  Text('Nội dung của Tab Thu nhập', style: fonts.bodyLarge),
-                ],
+              _buildChartTab(
+                context,
+                stream: viewModel.incomeChartDataStream,
               ),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildChartTab(BuildContext context, {required Stream<List<ChartSampleData>> stream}) {
+    final theme = Theme.of(context);
+    final fonts = theme.textTheme;
+    final colors = theme.colorScheme;
+    final currencyFormatter = NumberFormat.currency(locale: 'vi_VN', symbol: 'đ');
+
+    return StreamBuilder<List<ChartSampleData>>(
+      stream: stream,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (snapshot.hasError) {
+          return Center(child: Text('Đã xảy ra lỗi: ${snapshot.error}'));
+        }
+        if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return const Center(child: Text('Không có dữ liệu cho tháng này.'));
+        }
+
+        final chartData = snapshot.data!;
+
+        return Column(
+          children: [
+            colDivider,
+            SfCircularChart(
+              tooltipBehavior: TooltipBehavior(
+                enable: true,
+                builder: (data, point, series, pointIndex, seriesIndex) {
+                  final ChartSampleData item = data;
+                  return Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text(
+                      '${item.x}: ${item.y!.toStringAsFixed(0)}đ (${item.size!.toStringAsFixed(1)}%)',
+                      style: fonts.labelLarge!.copyWith(
+                          color: colors.onPrimary
+                      ),
+                    ),
+                  );
+                },
+              ),
+              series: <CircularSeries>[
+                PieSeries<ChartSampleData, String>(
+                  dataSource: chartData,
+                  xValueMapper: (ChartSampleData data, int index) => data.x,
+                  yValueMapper: (ChartSampleData data, int index) => data.y,
+                  dataLabelMapper: (ChartSampleData data, int index) => data.x,
+                  radius: '55%',
+                  dataLabelSettings: DataLabelSettings(
+                    isVisible: true,
+                    labelIntersectAction: LabelIntersectAction.none,
+                    labelPosition: ChartDataLabelPosition.outside,
+                    connectorLineSettings: ConnectorLineSettings(
+                      type: ConnectorType.curve,
+                    ),
+                  ),
+                ),
+              ],
+            )
+          ],
+        );
+      },
     );
   }
 }
