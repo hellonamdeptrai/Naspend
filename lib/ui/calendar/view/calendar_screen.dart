@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:naspend/core/router/app_routes.dart';
 import 'package:naspend/data/datasources/local/database.dart';
 import 'package:naspend/ui/calendar/view_model/calendar_view_model.dart';
 import 'package:provider/provider.dart';
@@ -260,6 +262,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
               final categoryName = category!.isActive ? category.name : 'Chưa phân loại';
 
               return ListTile(
+                onTap: () {
+                  context.push(AppRoutes.editTransaction, extra: txWithCategory);
+                },
                 leading: CircleAvatar(
                   backgroundColor: backgroundColor,
                   child: Icon(

@@ -7,11 +7,15 @@ import 'package:naspend/data/datasources/local/database.dart';
 
 class NoteViewModel extends ChangeNotifier {
   final AppDatabase _database;
-  StreamSubscription? _categorySubscription;
+  final TransactionWithCategory? initialTransaction;
 
-  NoteViewModel(this._database){
-    _listenToCategories();
+  NoteViewModel(this._database, {this.initialTransaction}) {
+    if (isEditMode) {
+      _loadDataForEdit();
+    }
   }
+
+  bool get isEditMode => initialTransaction != null;
 
   final TextEditingController noteController = TextEditingController();
   final TextEditingController amountController = TextEditingController();
@@ -54,17 +58,6 @@ class NoteViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void _listenToCategories() {
-    _categorySubscription?.cancel();
-
-    _categorySubscription = _database.watchAllCategories().listen((categories) {
-      if (_selectedCard == null && categories.isNotEmpty) {
-        _selectedCard = categories.first;
-        notifyListeners();
-      }
-    });
-  }
-
   void selectCard(Category tappedCard) {
     _selectedCard = tappedCard;
     notifyListeners();
@@ -73,37 +66,47 @@ class NoteViewModel extends ChangeNotifier {
   void clearForm() {
     noteController.clear();
     amountController.clear();
-    // Set lại category được chọn về null, hàm _listenToCategories sẽ tự động chọn lại item đầu tiên
     _selectedCard = null;
     notifyListeners();
   }
 
-  Future<void> addTransaction({required TransactionType type}) async {
+  void _loadDataForEdit() {
+    amountController.text = initialTransaction!.transaction.amount.toStringAsFixed(0);
+    noteController.text = initialTransaction!.transaction.note ?? '';
+    _selectedDate = initialTransaction!.transaction.transactionDate;
+    _selectedCard = initialTransaction!.category;
+  }
+
+  Future<void> saveTransaction({required TransactionType type}) async {
     final amountText = amountController.text.trim();
-    if (amountText.isEmpty) {
-      throw Exception('Vui lòng nhập số tiền.');
-    }
-
+    if (amountText.isEmpty) throw Exception('Vui lòng nhập số tiền.');
     final amount = double.tryParse(amountText);
-    if (amount == null || amount == 0) {
-      throw Exception('Số tiền không hợp lệ.');
+    if (amount == null || amount <= 0) throw Exception('Số tiền không hợp lệ.');
+    if (_selectedCard == null) throw Exception('Vui lòng chọn một danh mục.');
+
+    if (isEditMode) {
+      // --- CHẾ ĐỘ SỬA ---
+      final updatedTransaction = TransactionsCompanion(
+        id: Value(initialTransaction!.transaction.id),
+        amount: Value(amount),
+        transactionDate: Value(_selectedDate),
+        note: Value(noteController.text.trim()),
+        categoryId: Value(_selectedCard!.id),
+        type: Value(initialTransaction!.transaction.type), // Giữ nguyên type
+      );
+      await _database.updateTransaction(updatedTransaction);
+    } else {
+      // --- CHẾ ĐỘ THÊM MỚI ---
+      final newTransaction = TransactionsCompanion(
+        amount: Value(amount),
+        transactionDate: Value(_selectedDate),
+        note: Value(noteController.text.trim()),
+        categoryId: Value(_selectedCard!.id),
+        type: Value(type),
+      );
+      await _database.insertTransaction(newTransaction);
+      clearForm(); // Chỉ xóa form khi thêm mới
     }
-
-    if (_selectedCard == null) {
-      throw Exception('Vui lòng chọn một danh mục.');
-    }
-
-    final transaction = TransactionsCompanion(
-      amount: Value(amount),
-      transactionDate: Value(_selectedDate),
-      note: Value(noteController.text.trim()),
-      categoryId: Value(_selectedCard!.id),
-      type: Value(type),
-    );
-
-    await _database.insertTransaction(transaction);
-
-    clearForm();
   }
 
   Stream<List<Category>> get expenseCategoriesStream =>
@@ -112,9 +115,10 @@ class NoteViewModel extends ChangeNotifier {
   Stream<List<Category>> get incomeCategoriesStream =>
       _database.watchCategoriesByType(TransactionType.income);
 
+  Future<void> deleteTransaction() => _database.deleteTransaction(initialTransaction!.transaction.id);
+
   @override
   void dispose() {
-    _categorySubscription?.cancel();
     noteController.dispose();
     amountController.dispose();
     super.dispose();

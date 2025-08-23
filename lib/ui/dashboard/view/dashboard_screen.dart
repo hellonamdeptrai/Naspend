@@ -183,7 +183,7 @@ class DashboardScreen extends StatelessWidget {
       ),
       title: Text(data.x, style: fonts.bodyLarge),
       trailing: Row(
-        mainAxisSize: MainAxisSize.min, // Quan trọng để Row không chiếm hết chiều ngang
+        mainAxisSize: MainAxisSize.min,
         children: [
           Column(
             mainAxisAlignment: MainAxisAlignment.center,

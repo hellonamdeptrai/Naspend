@@ -18,24 +18,19 @@ class NoteScreen extends StatefulWidget {
 }
 
 class _NoteScreenState extends State<NoteScreen> {
-  late final Stream<List<Category>> _expenseCategoriesStream;
-  late final Stream<List<Category>> _incomeCategoriesStream;
-
-  @override
-  void initState() {
-    final viewModel = context.read<NoteViewModel>();
-    _expenseCategoriesStream = viewModel.expenseCategoriesStream;
-    _incomeCategoriesStream = viewModel.incomeCategoriesStream;
-    super.initState();
-  }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final fonts = theme.textTheme;
-    final colors = theme.colorScheme;
     final viewModel = context.watch<NoteViewModel>();
 
+    if (viewModel.isEditMode) {
+      return _buildEditScreen(context, viewModel);
+    } else {
+      return _buildAddScreen(context, viewModel);
+    }
+  }
+
+  Widget _buildAddScreen(BuildContext context, NoteViewModel viewModel) {
     return Expanded(
       child: DefaultTabController(
         length: viewModel.tabs.length,
@@ -49,19 +44,89 @@ class _NoteScreenState extends State<NoteScreen> {
                 children: [
                   _buildTabContent(
                     context: context,
-                    stream: _expenseCategoriesStream,
+                    stream: viewModel.expenseCategoriesStream,
                     type: TransactionType.expense,
                   ),
                   _buildTabContent(
                     context: context,
-                    stream: _incomeCategoriesStream,
+                    stream: viewModel.incomeCategoriesStream,
                     type: TransactionType.income,
                   ),
                 ],
               ),
             ),
           ],
-        )
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEditScreen(BuildContext context, NoteViewModel viewModel) {
+    final transactionType = viewModel.initialTransaction!.transaction.type;
+    final categoryStream = transactionType == TransactionType.expense
+        ? viewModel.expenseCategoriesStream
+        : viewModel.incomeCategoriesStream;
+
+    final theme = Theme.of(context);
+    final fonts = theme.textTheme;
+    final colors = theme.colorScheme;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Sửa giao dịch'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.delete),
+            onPressed: () async {
+              final confirm = await showDialog<bool>(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: const Text('Xác nhận xóa'),
+                  content: const Text('Bạn có chắc chắn muốn xóa giao dịch này không?'),
+                  actions: [
+                    TextButton(
+                      onPressed: () => context.pop(false),
+                      child: const Text('Hủy'),
+                    ),
+                    TextButton(
+                      onPressed: () => context.pop(true),
+                      child: Text('Xóa', style: fonts.labelLarge!.copyWith(color: colors.error)),
+                    ),
+                  ],
+                ),
+              );
+
+              if (confirm == true) {
+                try {
+                  await viewModel.deleteTransaction();
+                  if (context.mounted) {
+                    context.pop();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Đã xóa giao dịch thành công!'),
+                        backgroundColor: Colors.green,
+                      ),
+                    );
+                  }
+                } catch (e) {
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Lỗi: ${e.toString().replaceAll('Exception: ', '')}'),
+                        backgroundColor: Theme.of(context).colorScheme.error,
+                      ),
+                    );
+                  }
+                }
+              }
+            },
+          ),
+        ],
+      ),
+      body: _buildTabContent(
+        context: context,
+        stream: categoryStream,
+        type: transactionType,
       ),
     );
   }
@@ -75,6 +140,13 @@ class _NoteScreenState extends State<NoteScreen> {
     final fonts = theme.textTheme;
     final colors = theme.colorScheme;
     final viewModel = context.watch<NoteViewModel>();
+
+    final String buttonText;
+    if (viewModel.isEditMode) {
+      buttonText = 'Lưu thay đổi';
+    } else {
+      buttonText = 'Lưu ${type == TransactionType.expense ? 'chi tiêu' : 'thu nhập'}';
+    }
 
     return Column(
       children: [
@@ -174,7 +246,12 @@ class _NoteScreenState extends State<NoteScreen> {
           child: FilledButton(
             onPressed: () async {
               try {
-                await viewModel.addTransaction(type: type);
+                await viewModel.saveTransaction(type: type);
+                if(viewModel.isEditMode) {
+                  if (context.mounted) {
+                    context.pop();
+                  }
+                }
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
@@ -184,7 +261,6 @@ class _NoteScreenState extends State<NoteScreen> {
                   );
                 }
               } catch (e) {
-                // Hiển thị thông báo lỗi nếu có
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
@@ -196,7 +272,7 @@ class _NoteScreenState extends State<NoteScreen> {
               }
 
             },
-            child: Center(child: Text('Lưu ${type == TransactionType.expense ? 'chi tiêu' : 'thu nhập'}'))
+            child: Center(child: Text(buttonText))
           ),
         ),
       ],

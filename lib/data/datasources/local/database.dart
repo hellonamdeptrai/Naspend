@@ -35,11 +35,11 @@ class Transactions extends Table {
 
 class TransactionWithCategory {
   final Transaction transaction;
-  final Category? category; // <-- Chuyển thành nullable
+  final Category? category;
 
   TransactionWithCategory({
     required this.transaction,
-    this.category, // <-- Bỏ required
+    this.category,
   });
 }
 
