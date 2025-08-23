@@ -18,42 +18,39 @@ class Categories extends Table {
   IntColumn get backgroundColorValue => integer()();
 
   // Cột để phân loại: 0 cho Chi tiêu, 1 cho Thu nhập
-  // Chúng ta sẽ dùng TypeConverter để chuyển đổi giữa int và enum TransactionType
   IntColumn get type => integer()();
 }
-
 
 // Bảng TRANSACTIONS: Lưu trữ tất cả các giao dịch thu và chi
 @DataClassName('Transaction')
 class Transactions extends Table {
   IntColumn get id => integer().autoIncrement()();
-  RealColumn get amount => real()(); // Số tiền, dùng Real để lưu số thực
-  DateTimeColumn get transactionDate => dateTime()(); // Ngày giao dịch
-  TextColumn get note => text().nullable()(); // Ghi chú, có thể trống
-
-  // Khóa ngoại: Mỗi giao dịch phải thuộc về một danh mục
-  // onDelete: Set(null) nghĩa là nếu category bị xóa, cột này sẽ được set về NULL
-  // thay vì xóa luôn giao dịch (để bảo toàn dữ liệu)
+  RealColumn get amount => real()();
+  DateTimeColumn get transactionDate => dateTime()();
+  TextColumn get note => text().nullable()();
   IntColumn get categoryId => integer().nullable().references(Categories, #id, onDelete: KeyAction.setNull)();
+  IntColumn get type => integer().map(const EnumIndexConverter(TransactionType.values))();
+  IntColumn get categoryIconCodePoint => integer().nullable()();
+  IntColumn get categoryIconColorValue => integer().nullable()();
+  IntColumn get categoryBackgroundColorValue => integer().nullable()();
 }
 
 class TransactionWithCategory {
   final Transaction transaction;
-  final Category category;
+  final Category? category; // <-- Chuyển thành nullable
 
   TransactionWithCategory({
     required this.transaction,
-    required this.category,
+    this.category, // <-- Bỏ required
   });
 }
-
 
 @DriftDatabase(tables: [Categories, Transactions])
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   // == CÁC TRUY VẤN CHO TRANSACTIONS ==
 
@@ -99,16 +96,16 @@ class AppDatabase extends _$AppDatabase {
     final endOfMonth = DateTime(date.year, date.month + 1, 0, 23, 59, 59);
 
     final query = select(transactions).join([
-      innerJoin(categories, categories.id.equalsExp(transactions.categoryId))
+      leftOuterJoin(categories, categories.id.equalsExp(transactions.categoryId))
     ])
-    // Lọc theo ngày giao dịch
       ..where(transactions.transactionDate.isBetween(Constant(startOfMonth), Constant(endOfMonth)));
 
     return query.watch().map((rows) {
       return rows.map((row) {
         return TransactionWithCategory(
           transaction: row.readTable(transactions),
-          category: row.readTable(categories),
+          // SỬA Ở ĐÂY: Dùng readTableOrNull
+          category: row.readTableOrNull(categories),
         );
       }).toList();
     });

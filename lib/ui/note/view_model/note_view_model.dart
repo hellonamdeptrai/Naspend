@@ -78,7 +78,7 @@ class NoteViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> addTransaction() async {
+  Future<void> addTransaction({required TransactionType type}) async {
     final amountText = amountController.text.trim();
     if (amountText.isEmpty) {
       throw Exception('Vui lòng nhập số tiền.');
@@ -98,6 +98,10 @@ class NoteViewModel extends ChangeNotifier {
       transactionDate: Value(_selectedDate),
       note: Value(noteController.text.trim()),
       categoryId: Value(_selectedCard!.id),
+      type: Value(type),
+      categoryIconCodePoint: Value(_selectedCard!.iconCodePoint),
+      categoryIconColorValue: Value(_selectedCard!.iconColorValue),
+      categoryBackgroundColorValue: Value(_selectedCard!.backgroundColorValue),
     );
 
     await _database.insertTransaction(transaction);

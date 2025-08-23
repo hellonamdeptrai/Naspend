@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:naspend/data/model/chart_data.dart';
 import 'package:naspend/shared/widgets/component_screen.dart';
 import 'package:naspend/ui/dashboard/view_model/dashboard_view_model.dart';
 import 'package:provider/provider.dart';
@@ -165,13 +166,56 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildChartTab(BuildContext context, {required Stream<List<ChartSampleData>> stream}) {
+  Widget _buildChartListItem(BuildContext context, ChartData data) {
     final theme = Theme.of(context);
     final fonts = theme.textTheme;
     final colors = theme.colorScheme;
     final currencyFormatter = NumberFormat.currency(locale: 'vi_VN', symbol: 'đ');
 
-    return StreamBuilder<List<ChartSampleData>>(
+    final backgroundColor = Color(data.backgroundColorValue!);
+    final iconColor = Color(data.iconColorValue!);
+    final iconData = IconData(data.iconCodePoint!, fontFamily: 'MaterialIcons');
+
+    return ListTile(
+      leading: CircleAvatar(
+        backgroundColor: backgroundColor,
+        child: Icon(iconData, color: iconColor),
+      ),
+      title: Text(data.x, style: fonts.bodyLarge),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min, // Quan trọng để Row không chiếm hết chiều ngang
+        children: [
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                currencyFormatter.format(data.y),
+                style: fonts.bodyMedium!.copyWith(fontWeight: FontWeight.bold),
+              ),
+              Text(
+                '${data.size?.toStringAsFixed(1)}%',
+                style: fonts.bodySmall!.copyWith(color: colors.onSurfaceVariant),
+              ),
+            ],
+          ),
+          const SizedBox(width: 8),
+          Icon(Icons.chevron_right, color: colors.onSurfaceVariant),
+        ],
+      ),
+      onTap: () {
+
+      },
+    );
+  }
+
+  Widget _buildChartTab(BuildContext context, {required Stream<List<ChartData>> stream}) {
+    final theme = Theme.of(context);
+    final fonts = theme.textTheme;
+    final colors = theme.colorScheme;
+    final currencyFormatter = NumberFormat.currency(locale: 'vi_VN', symbol: 'đ');
+
+    return StreamBuilder<List<ChartData>>(
       stream: stream,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
@@ -186,18 +230,20 @@ class DashboardScreen extends StatelessWidget {
 
         final chartData = snapshot.data!;
 
-        return Column(
+        return ListView(
           children: [
             colDivider,
             SfCircularChart(
               tooltipBehavior: TooltipBehavior(
                 enable: true,
                 builder: (data, point, series, pointIndex, seriesIndex) {
-                  final ChartSampleData item = data;
+                  final ChartData item = data;
+                  final currencyFormatter =
+                  NumberFormat.currency(locale: 'vi_VN', symbol: 'đ');
                   return Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Text(
-                      '${item.x}: ${item.y!.toStringAsFixed(0)}đ (${item.size!.toStringAsFixed(1)}%)',
+                      '${item.x}: ${currencyFormatter.format(item.y)} (${item.size!.toStringAsFixed(1)}%)',
                       style: fonts.labelLarge!.copyWith(
                           color: colors.onPrimary
                       ),
@@ -206,39 +252,40 @@ class DashboardScreen extends StatelessWidget {
                 },
               ),
               series: <CircularSeries>[
-                PieSeries<ChartSampleData, String>(
+                DoughnutSeries<ChartData, String>(
                   dataSource: chartData,
-                  xValueMapper: (ChartSampleData data, int index) => data.x,
-                  yValueMapper: (ChartSampleData data, int index) => data.y,
-                  dataLabelMapper: (ChartSampleData data, int index) => data.x,
-                  radius: '55%',
+                  xValueMapper: (ChartData data, int index) => data.x,
+                  yValueMapper: (ChartData data, int index) => data.y,
+                  dataLabelMapper: (ChartData data, int index) =>
+                  '${data.x}\n${data.size?.toStringAsFixed(1)}%',
+                  radius: '70%',
+                  innerRadius: '50%',
                   dataLabelSettings: DataLabelSettings(
                     isVisible: true,
-                    labelIntersectAction: LabelIntersectAction.none,
+                    labelIntersectAction: LabelIntersectAction.shift,
                     labelPosition: ChartDataLabelPosition.outside,
                     connectorLineSettings: ConnectorLineSettings(
-                      type: ConnectorType.curve,
+                        type: ConnectorType.curve,
+                        length: '10%'
                     ),
                   ),
                 ),
               ],
-            )
+            ),
+            ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: chartData.length,
+              separatorBuilder: (context, index) => const Divider(height: 1, indent: 16, endIndent: 16),
+              itemBuilder: (context, index) {
+                final data = chartData[index];
+                return _buildChartListItem(context, data);
+              },
+            ),
           ],
         );
       },
     );
   }
-}
-
-class ChartSampleData {
-  ChartSampleData({
-    this.x,
-    this.y,
-    this.size,
-  });
-
-  final dynamic x;
-  final num? y;
-  final num? size;
 }
 

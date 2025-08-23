@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:naspend/core/router/app_router.dart';
 import 'package:naspend/data/datasources/local/database.dart';
+import 'package:naspend/ui/calendar/view_model/calendar_view_model.dart';
 import 'package:naspend/ui/category/view_model/add_category_view_model.dart';
 import 'package:naspend/ui/category/view_model/category_view_model.dart';
 import 'package:naspend/ui/dashboard/view_model/dashboard_view_model.dart';
@@ -29,6 +30,9 @@ void main() {
           context.read<AppDatabase>(),
         )),
         ChangeNotifierProvider(create: (context) => CategoryViewModel(
+          context.read<AppDatabase>(),
+        )),
+        ChangeNotifierProvider(create: (context) => CalendarViewModel(
           context.read<AppDatabase>(),
         )),
       ],

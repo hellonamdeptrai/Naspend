@@ -174,7 +174,7 @@ class _NoteScreenState extends State<NoteScreen> {
           child: FilledButton(
             onPressed: () async {
               try {
-                await viewModel.addTransaction();
+                await viewModel.addTransaction(type: type);
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(

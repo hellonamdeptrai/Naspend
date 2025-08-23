@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:month_picker_dialog/month_picker_dialog.dart';
 import 'package:naspend/data/datasources/local/database.dart';
-import 'package:naspend/ui/dashboard/view/dashboard_screen.dart';
+import 'package:naspend/data/model/chart_data.dart';
 import 'package:rxdart/rxdart.dart';
 
 class DashboardViewModel extends ChangeNotifier {
@@ -57,10 +57,10 @@ class DashboardViewModel extends ChangeNotifier {
   StreamSubscription? _dbSubscription;
 
   // Các Stream để UI lắng nghe
-  Stream<List<ChartSampleData>> get expenseChartDataStream =>
+  Stream<List<ChartData>> get expenseChartDataStream =>
       _transactionsController.stream.map(_processChartDataForType(TransactionType.expense));
 
-  Stream<List<ChartSampleData>> get incomeChartDataStream =>
+  Stream<List<ChartData>> get incomeChartDataStream =>
       _transactionsController.stream.map(_processChartDataForType(TransactionType.income));
 
   Stream<double> get totalExpenseStream =>
@@ -74,30 +74,44 @@ class DashboardViewModel extends ChangeNotifier {
 
 
   // Hàm xử lý dữ liệu thô từ DB thành dữ liệu cho biểu đồ
-  List<ChartSampleData> Function(List<TransactionWithCategory>) _processChartDataForType(TransactionType type) {
+  List<ChartData> Function(List<TransactionWithCategory>) _processChartDataForType(TransactionType type) {
     return (transactions) {
       // Lọc giao dịch theo loại (thu/chi)
-      final filtered = transactions.where((t) => t.category.type == type.index).toList();
+      final filtered = transactions.where((t) => t.transaction.type == type).toList();
       if (filtered.isEmpty) return [];
 
       final totalValue = filtered.fold<double>(0, (sum, item) => sum + item.transaction.amount);
       if (totalValue == 0) return [];
 
       // Nhóm các giao dịch theo categoryId và tính tổng số tiền
-      final Map<int, double> categoryTotals = {};
+      final Map<int?, double> categoryTotals = {};
       for (var t in filtered) {
-        categoryTotals.update(t.category.id, (value) => value + t.transaction.amount, ifAbsent: () => t.transaction.amount);
+        categoryTotals.update(
+          t.transaction.categoryId,
+              (value) => value + t.transaction.amount,
+          ifAbsent: () => t.transaction.amount,
+        );
       }
 
-      // Chuyển đổi map đã nhóm thành List<ChartSampleData>
       return categoryTotals.entries.map((entry) {
-        final category = filtered.firstWhere((t) => t.category.id == entry.key).category;
+        final categoryId = entry.key;
         final amount = entry.value;
+
+        final representative = filtered.firstWhere(
+              (t) => t.transaction.categoryId == categoryId,
+        );
+
+        final categoryName = representative.category?.name ?? 'Chưa phân loại';
         final percentage = (amount / totalValue) * 100;
-        return ChartSampleData(
-          x: category.name,
+
+        // TRUYỀN DỮ LIỆU ICON/MÀU VÀO ChartData
+        return ChartData(
+          x: categoryName,
           y: amount,
-          size: percentage, // Dùng 'size' để lưu trữ %
+          size: percentage,
+          iconCodePoint: representative.transaction.categoryIconCodePoint,
+          iconColorValue: representative.transaction.categoryIconColorValue,
+          backgroundColorValue: representative.transaction.categoryBackgroundColorValue,
         );
       }).toList();
     };
@@ -107,7 +121,7 @@ class DashboardViewModel extends ChangeNotifier {
   double Function(List<TransactionWithCategory>) _calculateTotalForType(TransactionType type) {
     return (transactions) {
       return transactions
-          .where((t) => t.category.type == type.index)
+          .where((t) => t.transaction.type == type)
           .fold<double>(0, (sum, item) => sum + item.transaction.amount);
     };
   }

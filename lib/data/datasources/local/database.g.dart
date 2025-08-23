@@ -490,12 +490,56 @@ class $TransactionsTable extends Transactions
     ),
   );
   @override
+  late final GeneratedColumnWithTypeConverter<TransactionType, int> type =
+      GeneratedColumn<int>(
+        'type',
+        aliasedName,
+        false,
+        type: DriftSqlType.int,
+        requiredDuringInsert: true,
+      ).withConverter<TransactionType>($TransactionsTable.$convertertype);
+  static const VerificationMeta _categoryIconCodePointMeta =
+      const VerificationMeta('categoryIconCodePoint');
+  @override
+  late final GeneratedColumn<int> categoryIconCodePoint = GeneratedColumn<int>(
+    'category_icon_code_point',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _categoryIconColorValueMeta =
+      const VerificationMeta('categoryIconColorValue');
+  @override
+  late final GeneratedColumn<int> categoryIconColorValue = GeneratedColumn<int>(
+    'category_icon_color_value',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _categoryBackgroundColorValueMeta =
+      const VerificationMeta('categoryBackgroundColorValue');
+  @override
+  late final GeneratedColumn<int> categoryBackgroundColorValue =
+      GeneratedColumn<int>(
+        'category_background_color_value',
+        aliasedName,
+        true,
+        type: DriftSqlType.int,
+        requiredDuringInsert: false,
+      );
+  @override
   List<GeneratedColumn> get $columns => [
     id,
     amount,
     transactionDate,
     note,
     categoryId,
+    type,
+    categoryIconCodePoint,
+    categoryIconColorValue,
+    categoryBackgroundColorValue,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -543,6 +587,33 @@ class $TransactionsTable extends Transactions
         categoryId.isAcceptableOrUnknown(data['category_id']!, _categoryIdMeta),
       );
     }
+    if (data.containsKey('category_icon_code_point')) {
+      context.handle(
+        _categoryIconCodePointMeta,
+        categoryIconCodePoint.isAcceptableOrUnknown(
+          data['category_icon_code_point']!,
+          _categoryIconCodePointMeta,
+        ),
+      );
+    }
+    if (data.containsKey('category_icon_color_value')) {
+      context.handle(
+        _categoryIconColorValueMeta,
+        categoryIconColorValue.isAcceptableOrUnknown(
+          data['category_icon_color_value']!,
+          _categoryIconColorValueMeta,
+        ),
+      );
+    }
+    if (data.containsKey('category_background_color_value')) {
+      context.handle(
+        _categoryBackgroundColorValueMeta,
+        categoryBackgroundColorValue.isAcceptableOrUnknown(
+          data['category_background_color_value']!,
+          _categoryBackgroundColorValueMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -572,6 +643,24 @@ class $TransactionsTable extends Transactions
         DriftSqlType.int,
         data['${effectivePrefix}category_id'],
       ),
+      type: $TransactionsTable.$convertertype.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.int,
+          data['${effectivePrefix}type'],
+        )!,
+      ),
+      categoryIconCodePoint: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}category_icon_code_point'],
+      ),
+      categoryIconColorValue: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}category_icon_color_value'],
+      ),
+      categoryBackgroundColorValue: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}category_background_color_value'],
+      ),
     );
   }
 
@@ -579,6 +668,9 @@ class $TransactionsTable extends Transactions
   $TransactionsTable createAlias(String alias) {
     return $TransactionsTable(attachedDatabase, alias);
   }
+
+  static JsonTypeConverter2<TransactionType, int, int> $convertertype =
+      const EnumIndexConverter(TransactionType.values);
 }
 
 class Transaction extends DataClass implements Insertable<Transaction> {
@@ -587,12 +679,20 @@ class Transaction extends DataClass implements Insertable<Transaction> {
   final DateTime transactionDate;
   final String? note;
   final int? categoryId;
+  final TransactionType type;
+  final int? categoryIconCodePoint;
+  final int? categoryIconColorValue;
+  final int? categoryBackgroundColorValue;
   const Transaction({
     required this.id,
     required this.amount,
     required this.transactionDate,
     this.note,
     this.categoryId,
+    required this.type,
+    this.categoryIconCodePoint,
+    this.categoryIconColorValue,
+    this.categoryBackgroundColorValue,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -606,6 +706,22 @@ class Transaction extends DataClass implements Insertable<Transaction> {
     if (!nullToAbsent || categoryId != null) {
       map['category_id'] = Variable<int>(categoryId);
     }
+    {
+      map['type'] = Variable<int>(
+        $TransactionsTable.$convertertype.toSql(type),
+      );
+    }
+    if (!nullToAbsent || categoryIconCodePoint != null) {
+      map['category_icon_code_point'] = Variable<int>(categoryIconCodePoint);
+    }
+    if (!nullToAbsent || categoryIconColorValue != null) {
+      map['category_icon_color_value'] = Variable<int>(categoryIconColorValue);
+    }
+    if (!nullToAbsent || categoryBackgroundColorValue != null) {
+      map['category_background_color_value'] = Variable<int>(
+        categoryBackgroundColorValue,
+      );
+    }
     return map;
   }
 
@@ -618,6 +734,17 @@ class Transaction extends DataClass implements Insertable<Transaction> {
       categoryId: categoryId == null && nullToAbsent
           ? const Value.absent()
           : Value(categoryId),
+      type: Value(type),
+      categoryIconCodePoint: categoryIconCodePoint == null && nullToAbsent
+          ? const Value.absent()
+          : Value(categoryIconCodePoint),
+      categoryIconColorValue: categoryIconColorValue == null && nullToAbsent
+          ? const Value.absent()
+          : Value(categoryIconColorValue),
+      categoryBackgroundColorValue:
+          categoryBackgroundColorValue == null && nullToAbsent
+          ? const Value.absent()
+          : Value(categoryBackgroundColorValue),
     );
   }
 
@@ -632,6 +759,18 @@ class Transaction extends DataClass implements Insertable<Transaction> {
       transactionDate: serializer.fromJson<DateTime>(json['transactionDate']),
       note: serializer.fromJson<String?>(json['note']),
       categoryId: serializer.fromJson<int?>(json['categoryId']),
+      type: $TransactionsTable.$convertertype.fromJson(
+        serializer.fromJson<int>(json['type']),
+      ),
+      categoryIconCodePoint: serializer.fromJson<int?>(
+        json['categoryIconCodePoint'],
+      ),
+      categoryIconColorValue: serializer.fromJson<int?>(
+        json['categoryIconColorValue'],
+      ),
+      categoryBackgroundColorValue: serializer.fromJson<int?>(
+        json['categoryBackgroundColorValue'],
+      ),
     );
   }
   @override
@@ -643,6 +782,14 @@ class Transaction extends DataClass implements Insertable<Transaction> {
       'transactionDate': serializer.toJson<DateTime>(transactionDate),
       'note': serializer.toJson<String?>(note),
       'categoryId': serializer.toJson<int?>(categoryId),
+      'type': serializer.toJson<int>(
+        $TransactionsTable.$convertertype.toJson(type),
+      ),
+      'categoryIconCodePoint': serializer.toJson<int?>(categoryIconCodePoint),
+      'categoryIconColorValue': serializer.toJson<int?>(categoryIconColorValue),
+      'categoryBackgroundColorValue': serializer.toJson<int?>(
+        categoryBackgroundColorValue,
+      ),
     };
   }
 
@@ -652,12 +799,26 @@ class Transaction extends DataClass implements Insertable<Transaction> {
     DateTime? transactionDate,
     Value<String?> note = const Value.absent(),
     Value<int?> categoryId = const Value.absent(),
+    TransactionType? type,
+    Value<int?> categoryIconCodePoint = const Value.absent(),
+    Value<int?> categoryIconColorValue = const Value.absent(),
+    Value<int?> categoryBackgroundColorValue = const Value.absent(),
   }) => Transaction(
     id: id ?? this.id,
     amount: amount ?? this.amount,
     transactionDate: transactionDate ?? this.transactionDate,
     note: note.present ? note.value : this.note,
     categoryId: categoryId.present ? categoryId.value : this.categoryId,
+    type: type ?? this.type,
+    categoryIconCodePoint: categoryIconCodePoint.present
+        ? categoryIconCodePoint.value
+        : this.categoryIconCodePoint,
+    categoryIconColorValue: categoryIconColorValue.present
+        ? categoryIconColorValue.value
+        : this.categoryIconColorValue,
+    categoryBackgroundColorValue: categoryBackgroundColorValue.present
+        ? categoryBackgroundColorValue.value
+        : this.categoryBackgroundColorValue,
   );
   Transaction copyWithCompanion(TransactionsCompanion data) {
     return Transaction(
@@ -670,6 +831,16 @@ class Transaction extends DataClass implements Insertable<Transaction> {
       categoryId: data.categoryId.present
           ? data.categoryId.value
           : this.categoryId,
+      type: data.type.present ? data.type.value : this.type,
+      categoryIconCodePoint: data.categoryIconCodePoint.present
+          ? data.categoryIconCodePoint.value
+          : this.categoryIconCodePoint,
+      categoryIconColorValue: data.categoryIconColorValue.present
+          ? data.categoryIconColorValue.value
+          : this.categoryIconColorValue,
+      categoryBackgroundColorValue: data.categoryBackgroundColorValue.present
+          ? data.categoryBackgroundColorValue.value
+          : this.categoryBackgroundColorValue,
     );
   }
 
@@ -680,14 +851,27 @@ class Transaction extends DataClass implements Insertable<Transaction> {
           ..write('amount: $amount, ')
           ..write('transactionDate: $transactionDate, ')
           ..write('note: $note, ')
-          ..write('categoryId: $categoryId')
+          ..write('categoryId: $categoryId, ')
+          ..write('type: $type, ')
+          ..write('categoryIconCodePoint: $categoryIconCodePoint, ')
+          ..write('categoryIconColorValue: $categoryIconColorValue, ')
+          ..write('categoryBackgroundColorValue: $categoryBackgroundColorValue')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, amount, transactionDate, note, categoryId);
+  int get hashCode => Object.hash(
+    id,
+    amount,
+    transactionDate,
+    note,
+    categoryId,
+    type,
+    categoryIconCodePoint,
+    categoryIconColorValue,
+    categoryBackgroundColorValue,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -696,7 +880,12 @@ class Transaction extends DataClass implements Insertable<Transaction> {
           other.amount == this.amount &&
           other.transactionDate == this.transactionDate &&
           other.note == this.note &&
-          other.categoryId == this.categoryId);
+          other.categoryId == this.categoryId &&
+          other.type == this.type &&
+          other.categoryIconCodePoint == this.categoryIconCodePoint &&
+          other.categoryIconColorValue == this.categoryIconColorValue &&
+          other.categoryBackgroundColorValue ==
+              this.categoryBackgroundColorValue);
 }
 
 class TransactionsCompanion extends UpdateCompanion<Transaction> {
@@ -705,12 +894,20 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
   final Value<DateTime> transactionDate;
   final Value<String?> note;
   final Value<int?> categoryId;
+  final Value<TransactionType> type;
+  final Value<int?> categoryIconCodePoint;
+  final Value<int?> categoryIconColorValue;
+  final Value<int?> categoryBackgroundColorValue;
   const TransactionsCompanion({
     this.id = const Value.absent(),
     this.amount = const Value.absent(),
     this.transactionDate = const Value.absent(),
     this.note = const Value.absent(),
     this.categoryId = const Value.absent(),
+    this.type = const Value.absent(),
+    this.categoryIconCodePoint = const Value.absent(),
+    this.categoryIconColorValue = const Value.absent(),
+    this.categoryBackgroundColorValue = const Value.absent(),
   });
   TransactionsCompanion.insert({
     this.id = const Value.absent(),
@@ -718,14 +915,23 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
     required DateTime transactionDate,
     this.note = const Value.absent(),
     this.categoryId = const Value.absent(),
+    required TransactionType type,
+    this.categoryIconCodePoint = const Value.absent(),
+    this.categoryIconColorValue = const Value.absent(),
+    this.categoryBackgroundColorValue = const Value.absent(),
   }) : amount = Value(amount),
-       transactionDate = Value(transactionDate);
+       transactionDate = Value(transactionDate),
+       type = Value(type);
   static Insertable<Transaction> custom({
     Expression<int>? id,
     Expression<double>? amount,
     Expression<DateTime>? transactionDate,
     Expression<String>? note,
     Expression<int>? categoryId,
+    Expression<int>? type,
+    Expression<int>? categoryIconCodePoint,
+    Expression<int>? categoryIconColorValue,
+    Expression<int>? categoryBackgroundColorValue,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -733,6 +939,13 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
       if (transactionDate != null) 'transaction_date': transactionDate,
       if (note != null) 'note': note,
       if (categoryId != null) 'category_id': categoryId,
+      if (type != null) 'type': type,
+      if (categoryIconCodePoint != null)
+        'category_icon_code_point': categoryIconCodePoint,
+      if (categoryIconColorValue != null)
+        'category_icon_color_value': categoryIconColorValue,
+      if (categoryBackgroundColorValue != null)
+        'category_background_color_value': categoryBackgroundColorValue,
     });
   }
 
@@ -742,6 +955,10 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
     Value<DateTime>? transactionDate,
     Value<String?>? note,
     Value<int?>? categoryId,
+    Value<TransactionType>? type,
+    Value<int?>? categoryIconCodePoint,
+    Value<int?>? categoryIconColorValue,
+    Value<int?>? categoryBackgroundColorValue,
   }) {
     return TransactionsCompanion(
       id: id ?? this.id,
@@ -749,6 +966,13 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
       transactionDate: transactionDate ?? this.transactionDate,
       note: note ?? this.note,
       categoryId: categoryId ?? this.categoryId,
+      type: type ?? this.type,
+      categoryIconCodePoint:
+          categoryIconCodePoint ?? this.categoryIconCodePoint,
+      categoryIconColorValue:
+          categoryIconColorValue ?? this.categoryIconColorValue,
+      categoryBackgroundColorValue:
+          categoryBackgroundColorValue ?? this.categoryBackgroundColorValue,
     );
   }
 
@@ -770,6 +994,26 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
     if (categoryId.present) {
       map['category_id'] = Variable<int>(categoryId.value);
     }
+    if (type.present) {
+      map['type'] = Variable<int>(
+        $TransactionsTable.$convertertype.toSql(type.value),
+      );
+    }
+    if (categoryIconCodePoint.present) {
+      map['category_icon_code_point'] = Variable<int>(
+        categoryIconCodePoint.value,
+      );
+    }
+    if (categoryIconColorValue.present) {
+      map['category_icon_color_value'] = Variable<int>(
+        categoryIconColorValue.value,
+      );
+    }
+    if (categoryBackgroundColorValue.present) {
+      map['category_background_color_value'] = Variable<int>(
+        categoryBackgroundColorValue.value,
+      );
+    }
     return map;
   }
 
@@ -780,7 +1024,11 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
           ..write('amount: $amount, ')
           ..write('transactionDate: $transactionDate, ')
           ..write('note: $note, ')
-          ..write('categoryId: $categoryId')
+          ..write('categoryId: $categoryId, ')
+          ..write('type: $type, ')
+          ..write('categoryIconCodePoint: $categoryIconCodePoint, ')
+          ..write('categoryIconColorValue: $categoryIconColorValue, ')
+          ..write('categoryBackgroundColorValue: $categoryBackgroundColorValue')
           ..write(')'))
         .toString();
   }
@@ -1141,6 +1389,10 @@ typedef $$TransactionsTableCreateCompanionBuilder =
       required DateTime transactionDate,
       Value<String?> note,
       Value<int?> categoryId,
+      required TransactionType type,
+      Value<int?> categoryIconCodePoint,
+      Value<int?> categoryIconColorValue,
+      Value<int?> categoryBackgroundColorValue,
     });
 typedef $$TransactionsTableUpdateCompanionBuilder =
     TransactionsCompanion Function({
@@ -1149,6 +1401,10 @@ typedef $$TransactionsTableUpdateCompanionBuilder =
       Value<DateTime> transactionDate,
       Value<String?> note,
       Value<int?> categoryId,
+      Value<TransactionType> type,
+      Value<int?> categoryIconCodePoint,
+      Value<int?> categoryIconColorValue,
+      Value<int?> categoryBackgroundColorValue,
     });
 
 final class $$TransactionsTableReferences
@@ -1201,6 +1457,27 @@ class $$TransactionsTableFilterComposer
 
   ColumnFilters<String> get note => $composableBuilder(
     column: $table.note,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnWithTypeConverterFilters<TransactionType, TransactionType, int>
+  get type => $composableBuilder(
+    column: $table.type,
+    builder: (column) => ColumnWithTypeConverterFilters(column),
+  );
+
+  ColumnFilters<int> get categoryIconCodePoint => $composableBuilder(
+    column: $table.categoryIconCodePoint,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get categoryIconColorValue => $composableBuilder(
+    column: $table.categoryIconColorValue,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get categoryBackgroundColorValue => $composableBuilder(
+    column: $table.categoryBackgroundColorValue,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -1257,6 +1534,26 @@ class $$TransactionsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<int> get type => $composableBuilder(
+    column: $table.type,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get categoryIconCodePoint => $composableBuilder(
+    column: $table.categoryIconCodePoint,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get categoryIconColorValue => $composableBuilder(
+    column: $table.categoryIconColorValue,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get categoryBackgroundColorValue => $composableBuilder(
+    column: $table.categoryBackgroundColorValue,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$CategoriesTableOrderingComposer get categoryId {
     final $$CategoriesTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -1303,6 +1600,24 @@ class $$TransactionsTableAnnotationComposer
 
   GeneratedColumn<String> get note =>
       $composableBuilder(column: $table.note, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<TransactionType, int> get type =>
+      $composableBuilder(column: $table.type, builder: (column) => column);
+
+  GeneratedColumn<int> get categoryIconCodePoint => $composableBuilder(
+    column: $table.categoryIconCodePoint,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get categoryIconColorValue => $composableBuilder(
+    column: $table.categoryIconColorValue,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get categoryBackgroundColorValue => $composableBuilder(
+    column: $table.categoryBackgroundColorValue,
+    builder: (column) => column,
+  );
 
   $$CategoriesTableAnnotationComposer get categoryId {
     final $$CategoriesTableAnnotationComposer composer = $composerBuilder(
@@ -1361,12 +1676,20 @@ class $$TransactionsTableTableManager
                 Value<DateTime> transactionDate = const Value.absent(),
                 Value<String?> note = const Value.absent(),
                 Value<int?> categoryId = const Value.absent(),
+                Value<TransactionType> type = const Value.absent(),
+                Value<int?> categoryIconCodePoint = const Value.absent(),
+                Value<int?> categoryIconColorValue = const Value.absent(),
+                Value<int?> categoryBackgroundColorValue = const Value.absent(),
               }) => TransactionsCompanion(
                 id: id,
                 amount: amount,
                 transactionDate: transactionDate,
                 note: note,
                 categoryId: categoryId,
+                type: type,
+                categoryIconCodePoint: categoryIconCodePoint,
+                categoryIconColorValue: categoryIconColorValue,
+                categoryBackgroundColorValue: categoryBackgroundColorValue,
               ),
           createCompanionCallback:
               ({
@@ -1375,12 +1698,20 @@ class $$TransactionsTableTableManager
                 required DateTime transactionDate,
                 Value<String?> note = const Value.absent(),
                 Value<int?> categoryId = const Value.absent(),
+                required TransactionType type,
+                Value<int?> categoryIconCodePoint = const Value.absent(),
+                Value<int?> categoryIconColorValue = const Value.absent(),
+                Value<int?> categoryBackgroundColorValue = const Value.absent(),
               }) => TransactionsCompanion.insert(
                 id: id,
                 amount: amount,
                 transactionDate: transactionDate,
                 note: note,
                 categoryId: categoryId,
+                type: type,
+                categoryIconCodePoint: categoryIconCodePoint,
+                categoryIconColorValue: categoryIconColorValue,
+                categoryBackgroundColorValue: categoryBackgroundColorValue,
               ),
           withReferenceMapper: (p0) => p0
               .map(
