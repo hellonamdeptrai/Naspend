@@ -23,9 +23,12 @@ class _AddCategoryScreenState extends State<AddCategoryScreen> {
 
     final viewModel = context.watch<AddCategoryViewModel>();
 
+    final appBarTitle = viewModel.isEditMode ? 'Sửa danh mục' : 'Thêm danh mục';
+    final buttonText = viewModel.isEditMode ? 'Lưu thay đổi' : 'Lưu danh mục';
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Thêm danh mục'),
+        title: Text(appBarTitle),
       ),
       body: Column(
         children: [
@@ -131,7 +134,7 @@ class _AddCategoryScreenState extends State<AddCategoryScreen> {
                   context.pop();
                 }
               },
-              child: Center(child: Text('Lưu danh mục')),
+              child: Center(child: Text(buttonText)),
             ),
           ),
         ],

@@ -101,17 +101,17 @@ class DashboardViewModel extends ChangeNotifier {
               (t) => t.transaction.categoryId == categoryId,
         );
 
-        final categoryName = representative.category?.name ?? 'Chưa phân loại';
+        final category = representative.category;
+        final categoryName = category!.isActive ? category.name : 'Chưa phân loại';
         final percentage = (amount / totalValue) * 100;
 
-        // TRUYỀN DỮ LIỆU ICON/MÀU VÀO ChartData
         return ChartData(
           x: categoryName,
           y: amount,
           size: percentage,
-          iconCodePoint: representative.transaction.categoryIconCodePoint,
-          iconColorValue: representative.transaction.categoryIconColorValue,
-          backgroundColorValue: representative.transaction.categoryBackgroundColorValue,
+          iconCodePoint: category.iconCodePoint,
+          iconColorValue: category.iconColorValue,
+          backgroundColorValue: category.backgroundColorValue,
         );
       }).toList();
     };

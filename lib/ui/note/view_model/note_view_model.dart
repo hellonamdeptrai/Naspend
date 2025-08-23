@@ -99,9 +99,6 @@ class NoteViewModel extends ChangeNotifier {
       note: Value(noteController.text.trim()),
       categoryId: Value(_selectedCard!.id),
       type: Value(type),
-      categoryIconCodePoint: Value(_selectedCard!.iconCodePoint),
-      categoryIconColorValue: Value(_selectedCard!.iconColorValue),
-      categoryBackgroundColorValue: Value(_selectedCard!.backgroundColorValue),
     );
 
     await _database.insertTransaction(transaction);

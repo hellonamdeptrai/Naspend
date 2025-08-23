@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:naspend/core/router/app_routes.dart';
 import 'package:naspend/data/datasources/local/database.dart';
 import 'package:naspend/ui/category/view_model/category_view_model.dart';
 import 'package:provider/provider.dart';
@@ -37,7 +39,7 @@ class CategoryListStreamBuilder extends StatelessWidget {
 
             return ListTile(
               onTap: () {
-                // TODO: Xử lý khi nhấn vào để chỉnh sửa
+                context.push(AppRoutes.addCategory, extra: category);
               },
               leading: CircleAvatar(
                 backgroundColor: backgroundColor,

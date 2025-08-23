@@ -254,9 +254,10 @@ class _CalendarScreenState extends State<CalendarScreen> {
               final category = txWithCategory.category;
               final isIncome = tx.type == TransactionType.income;
 
-              final backgroundColor = Color(tx.categoryBackgroundColorValue ?? 0xffECEFFD);
-              final iconColor = Color(tx.categoryIconColorValue ?? 0xff2354C7);
-              final iconCodePoint = tx.categoryIconCodePoint ?? Icons.help_outline.codePoint;
+              final backgroundColor = Color(category?.backgroundColorValue ?? 0xffE0E0E0); // Màu xám mặc định
+              final iconColor = Color(category?.iconColorValue ?? 0xff616161);
+              final iconCodePoint = category?.iconCodePoint ?? Icons.help_outline.codePoint;
+              final categoryName = category!.isActive ? category.name : 'Chưa phân loại';
 
               return ListTile(
                 leading: CircleAvatar(
@@ -266,7 +267,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                     color: iconColor,
                   ),
                 ),
-                title: Text(category?.name ?? 'Chưa phân loại'),
+                title: Text(categoryName),
                 subtitle: tx.note != null && tx.note!.isNotEmpty ? Text(tx.note!) : null,
                 trailing: Text(
                   '${isIncome ? '+' : '-'} ${formatter.format(tx.amount)}',

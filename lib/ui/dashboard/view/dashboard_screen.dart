@@ -172,9 +172,9 @@ class DashboardScreen extends StatelessWidget {
     final colors = theme.colorScheme;
     final currencyFormatter = NumberFormat.currency(locale: 'vi_VN', symbol: 'đ');
 
-    final backgroundColor = Color(data.backgroundColorValue!);
-    final iconColor = Color(data.iconColorValue!);
-    final iconData = IconData(data.iconCodePoint!, fontFamily: 'MaterialIcons');
+    final backgroundColor = Color(data.backgroundColorValue ?? 0xffE0E0E0);
+    final iconColor = Color(data.iconColorValue ?? 0xff616161);
+    final iconData = IconData(data.iconCodePoint ?? Icons.help_outline.codePoint, fontFamily: 'MaterialIcons');
 
     return ListTile(
       leading: CircleAvatar(
@@ -238,8 +238,6 @@ class DashboardScreen extends StatelessWidget {
                 enable: true,
                 builder: (data, point, series, pointIndex, seriesIndex) {
                   final ChartData item = data;
-                  final currencyFormatter =
-                  NumberFormat.currency(locale: 'vi_VN', symbol: 'đ');
                   return Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Text(

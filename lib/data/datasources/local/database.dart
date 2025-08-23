@@ -19,6 +19,7 @@ class Categories extends Table {
 
   // Cột để phân loại: 0 cho Chi tiêu, 1 cho Thu nhập
   IntColumn get type => integer()();
+  BoolColumn get isActive => boolean().withDefault(const Constant(true))();
 }
 
 // Bảng TRANSACTIONS: Lưu trữ tất cả các giao dịch thu và chi
@@ -30,9 +31,6 @@ class Transactions extends Table {
   TextColumn get note => text().nullable()();
   IntColumn get categoryId => integer().nullable().references(Categories, #id, onDelete: KeyAction.setNull)();
   IntColumn get type => integer().map(const EnumIndexConverter(TransactionType.values))();
-  IntColumn get categoryIconCodePoint => integer().nullable()();
-  IntColumn get categoryIconColorValue => integer().nullable()();
-  IntColumn get categoryBackgroundColorValue => integer().nullable()();
 }
 
 class TransactionWithCategory {
@@ -50,7 +48,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 1;
 
   // == CÁC TRUY VẤN CHO TRANSACTIONS ==
 
@@ -76,7 +74,10 @@ class AppDatabase extends _$AppDatabase {
 
   // Lấy các danh mục theo loại (Chi tiêu hoặc Thu nhập)
   Stream<List<Category>> watchCategoriesByType(TransactionType type) {
-    return (select(categories)..where((tbl) => tbl.type.equals(type.index))).watch();
+    return (select(categories)
+    // Thêm điều kiện lọc `isActive`
+      ..where((tbl) => tbl.type.equals(type.index) & tbl.isActive.equals(true)))
+        .watch();
   }
 
   // Thêm một danh mục mới
@@ -88,8 +89,13 @@ class AppDatabase extends _$AppDatabase {
       update(categories).replace(category);
 
   // Xóa một danh mục
-  Future<int> deleteCategory(int id) =>
-      (delete(categories)..where((tbl) => tbl.id.equals(id))).go();
+  Future<int> deleteCategory(int id) {
+    // Thay vì xóa, chúng ta cập nhật cờ isActive
+    return (update(categories)..where((tbl) => tbl.id.equals(id)))
+        .write(const CategoriesCompanion(
+      isActive: Value(false),
+    ));
+  }
 
   Stream<List<TransactionWithCategory>> watchTransactionsInMonth(DateTime date) {
     final startOfMonth = DateTime(date.year, date.month, 1);

@@ -29,12 +29,22 @@ class AppRouter {
       GoRoute(
         path: AppRoutes.addCategory,
         builder: (context, state) {
-          final type = state.extra as TransactionType? ?? TransactionType.expense;
+          final extra = state.extra;
+
+          Category? initialCategory;
+          TransactionType type = TransactionType.expense;
+
+          if (extra is Category) {
+            initialCategory = extra;
+          } else if (extra is TransactionType) {
+            type = extra;
+          }
 
           return ChangeNotifierProvider(
             create: (context) => AddCategoryViewModel(
               context.read<AppDatabase>(),
-              type
+              initialCategory: initialCategory,
+              type: type,
             ),
             child: const AddCategoryScreen(),
           );

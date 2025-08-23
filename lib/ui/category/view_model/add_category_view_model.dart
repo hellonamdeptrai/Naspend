@@ -4,9 +4,30 @@ import 'package:naspend/data/datasources/local/database.dart';
 
 class AddCategoryViewModel extends ChangeNotifier {
   final AppDatabase _database;
-  final TransactionType type;
+  final Category? initialCategory;
+  late TransactionType type;
 
-  AddCategoryViewModel(this._database, this.type);
+  AddCategoryViewModel(
+      this._database, {
+        this.initialCategory,
+        TransactionType? type,
+      }) {
+    if (isEditMode) {
+      this.type = TransactionType.values[initialCategory!.type];
+      _initializeForEdit();
+    } else {
+      this.type = type ?? TransactionType.expense;
+    }
+  }
+
+  bool get isEditMode => initialCategory != null;
+
+  void _initializeForEdit() {
+    controllerCategoryName.text = initialCategory!.name;
+    _selectedIcon = IconData(initialCategory!.iconCodePoint, fontFamily: 'MaterialIcons');
+    _selectedColor = initialCategory!.iconColorValue;
+    _selectedBackgroundColor = initialCategory!.backgroundColorValue;
+  }
 
   final TextEditingController controllerCategoryName = TextEditingController();
 
@@ -48,15 +69,29 @@ class AddCategoryViewModel extends ChangeNotifier {
   }
 
   Future<void> saveCategory() async {
-    final newCategory = CategoriesCompanion(
-      name: Value(controllerCategoryName.text.trim()),
-      iconColorValue: Value(selectedColor),
-      backgroundColorValue: Value(selectedBackgroundColor),
-      type: Value(type.index),
-      iconCodePoint: Value(selectedIcon.codePoint),
-    );
+    final name = controllerCategoryName.text.trim();
+    if (name.isEmpty) return;
 
-    await _database.insertCategory(newCategory);
+    if (isEditMode) {
+      final updatedCategory = CategoriesCompanion(
+        id: Value(initialCategory!.id),
+        name: Value(name),
+        iconColorValue: Value(selectedColor),
+        backgroundColorValue: Value(selectedBackgroundColor),
+        type: Value(type.index),
+        iconCodePoint: Value(selectedIcon.codePoint),
+      );
+      await _database.updateCategory(updatedCategory);
+    } else {
+      final newCategory = CategoriesCompanion(
+        name: Value(name),
+        iconColorValue: Value(selectedColor),
+        backgroundColorValue: Value(selectedBackgroundColor),
+        type: Value(type.index),
+        iconCodePoint: Value(selectedIcon.codePoint),
+      );
+      await _database.insertCategory(newCategory);
+    }
   }
 
   @override
