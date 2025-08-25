@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:month_picker_dialog/month_picker_dialog.dart';
 import 'package:naspend/data/datasources/local/database.dart';
 import 'package:naspend/data/model/chart_data.dart';
+import 'package:naspend/data/model/transaction_with_category.dart';
 import 'package:rxdart/rxdart.dart';
 
 class DashboardViewModel extends ChangeNotifier {
@@ -112,6 +113,7 @@ class DashboardViewModel extends ChangeNotifier {
           iconCodePoint: category.iconCodePoint,
           iconColorValue: category.iconColorValue,
           backgroundColorValue: category.backgroundColorValue,
+          categoryId: categoryId
         );
       }).toList();
     };

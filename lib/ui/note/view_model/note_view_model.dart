@@ -4,12 +4,19 @@ import 'package:drift/drift.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:naspend/data/datasources/local/database.dart';
+import 'package:naspend/data/model/transaction_with_category.dart';
 
 class NoteViewModel extends ChangeNotifier {
   final AppDatabase _database;
   final TransactionWithCategory? initialTransaction;
 
+  late final Stream<List<Category>> expenseCategoriesStream;
+  late final Stream<List<Category>> incomeCategoriesStream;
+
   NoteViewModel(this._database, {this.initialTransaction}) {
+    expenseCategoriesStream = _database.watchCategoriesByType(TransactionType.expense);
+    incomeCategoriesStream = _database.watchCategoriesByType(TransactionType.income);
+
     if (isEditMode) {
       _loadDataForEdit();
     }
@@ -108,12 +115,6 @@ class NoteViewModel extends ChangeNotifier {
       clearForm(); // Chỉ xóa form khi thêm mới
     }
   }
-
-  Stream<List<Category>> get expenseCategoriesStream =>
-      _database.watchCategoriesByType(TransactionType.expense);
-
-  Stream<List<Category>> get incomeCategoriesStream =>
-      _database.watchCategoriesByType(TransactionType.income);
 
   Future<void> deleteTransaction() => _database.deleteTransaction(initialTransaction!.transaction.id);
 

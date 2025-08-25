@@ -5,6 +5,7 @@ class ChartData {
   final int? iconCodePoint;
   final int? iconColorValue;
   final int? backgroundColorValue;
+  final int? categoryId;
 
   ChartData({
     this.x,
@@ -13,5 +14,6 @@ class ChartData {
     this.iconCodePoint,
     this.iconColorValue,
     this.backgroundColorValue,
+    this.categoryId,
   });
 }

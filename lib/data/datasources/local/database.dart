@@ -1,5 +1,7 @@
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
+import 'package:naspend/data/model/monthly_total.dart';
+import 'package:naspend/data/model/transaction_with_category.dart';
 import 'package:path_provider/path_provider.dart';
 
 part 'database.g.dart';
@@ -33,15 +35,6 @@ class Transactions extends Table {
   IntColumn get type => integer().map(const EnumIndexConverter(TransactionType.values))();
 }
 
-class TransactionWithCategory {
-  final Transaction transaction;
-  final Category? category;
-
-  TransactionWithCategory({
-    required this.transaction,
-    this.category,
-  });
-}
 
 @DriftDatabase(tables: [Categories, Transactions])
 class AppDatabase extends _$AppDatabase {
@@ -110,11 +103,43 @@ class AppDatabase extends _$AppDatabase {
       return rows.map((row) {
         return TransactionWithCategory(
           transaction: row.readTable(transactions),
-          // SỬA Ở ĐÂY: Dùng readTableOrNull
           category: row.readTableOrNull(categories),
         );
       }).toList();
     });
+  }
+
+  Future<Category?> getCategoryById(int id) {
+    return (select(categories)..where((tbl) => tbl.id.equals(id))).getSingleOrNull();
+  }
+
+  Future<List<MonthlyTotal>> getMonthlyTotalsForCategory(int categoryId, int year) {
+    final month = transactions.transactionDate.month;
+    final totalAmount = transactions.amount.sum();
+
+    final query = selectOnly(transactions)
+      ..addColumns([month, totalAmount])
+      ..where(transactions.categoryId.equals(categoryId))
+      ..where(transactions.transactionDate.year.equals(year))
+      ..groupBy([month]);
+
+    return query.map((row) {
+      return MonthlyTotal(
+        month: row.read(month)!,
+        total: row.read(totalAmount) ?? 0.0,
+      );
+    }).get();
+  }
+
+  Stream<List<Transaction>> watchTransactionsForCategoryInSpecificMonth(int categoryId, DateTime monthDate) {
+    final startOfMonth = DateTime(monthDate.year, monthDate.month, 1);
+    final endOfMonth = DateTime(monthDate.year, monthDate.month + 1, 0, 23, 59, 59);
+
+    return (select(transactions)
+      ..where((tbl) => tbl.categoryId.equals(categoryId))
+      ..where((tbl) => tbl.transactionDate.isBetween(Constant(startOfMonth), Constant(endOfMonth)))
+      ..orderBy([(t) => OrderingTerm(expression: t.transactionDate, mode: OrderingMode.desc)])
+    ).watch();
   }
 
   static QueryExecutor _openConnection() {

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:naspend/data/datasources/local/database.dart';
 import 'package:naspend/data/model/daily_summary.dart';
+import 'package:naspend/data/model/transaction_with_category.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 class CalendarViewModel extends ChangeNotifier {

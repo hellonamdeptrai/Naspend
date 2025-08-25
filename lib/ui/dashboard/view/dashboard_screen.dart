@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:naspend/core/router/app_routes.dart';
 import 'package:naspend/data/model/chart_data.dart';
 import 'package:naspend/shared/widgets/component_screen.dart';
 import 'package:naspend/ui/dashboard/view_model/dashboard_view_model.dart';
@@ -153,10 +155,12 @@ class DashboardScreen extends StatelessWidget {
             children: [
               _buildChartTab(
                 context,
+                viewModel,
                 stream: viewModel.expenseChartDataStream,
               ),
               _buildChartTab(
                 context,
+                viewModel,
                 stream: viewModel.incomeChartDataStream,
               ),
             ],
@@ -166,7 +170,7 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildChartListItem(BuildContext context, ChartData data) {
+  Widget _buildChartListItem(BuildContext context, ChartData data, DashboardViewModel viewModel) {
     final theme = Theme.of(context);
     final fonts = theme.textTheme;
     final colors = theme.colorScheme;
@@ -204,12 +208,18 @@ class DashboardScreen extends StatelessWidget {
         ],
       ),
       onTap: () {
-
+        context.push(
+          AppRoutes.categoryTransactions,
+          extra: {
+            'categoryId': data.categoryId,
+            'month': viewModel.selectedDate,
+          }
+        );
       },
     );
   }
 
-  Widget _buildChartTab(BuildContext context, {required Stream<List<ChartData>> stream}) {
+  Widget _buildChartTab(BuildContext context, DashboardViewModel viewModel,{required Stream<List<ChartData>> stream}) {
     final theme = Theme.of(context);
     final fonts = theme.textTheme;
     final colors = theme.colorScheme;
@@ -277,7 +287,7 @@ class DashboardScreen extends StatelessWidget {
               separatorBuilder: (context, index) => const Divider(height: 1, indent: 16, endIndent: 16),
               itemBuilder: (context, index) {
                 final data = chartData[index];
-                return _buildChartListItem(context, data);
+                return _buildChartListItem(context, data, viewModel);
               },
             ),
           ],

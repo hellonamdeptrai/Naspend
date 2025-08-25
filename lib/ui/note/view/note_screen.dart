@@ -10,14 +10,8 @@ const Widget rowDivider = SizedBox(width: 20);
 const Widget colDivider = SizedBox(height: 10);
 const smallSpacing = 10.0;
 
-class NoteScreen extends StatefulWidget {
+class NoteScreen extends StatelessWidget {
   const NoteScreen({super.key});
-
-  @override
-  State<NoteScreen> createState() => _NoteScreenState();
-}
-
-class _NoteScreenState extends State<NoteScreen> {
 
   @override
   Widget build(BuildContext context) {
