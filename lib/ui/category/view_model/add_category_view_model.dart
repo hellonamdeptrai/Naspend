@@ -32,10 +32,12 @@ class AddCategoryViewModel extends ChangeNotifier {
   final TextEditingController controllerCategoryName = TextEditingController();
 
   final List<IconData> icons = const [
-    Icons.home, Icons.search, Icons.settings, Icons.person,
-    Icons.camera_alt, Icons.shopping_cart, Icons.favorite, Icons.music_note,
-    Icons.lightbulb, Icons.movie, Icons.phone, Icons.send,
-    Icons.wallet_giftcard, Icons.work, Icons.wifi, Icons.power_settings_new,
+    Icons.fastfood_outlined, Icons.face_outlined, Icons.shopping_bag_outlined,
+    Icons.medical_information_outlined, Icons.wine_bar_outlined,
+    Icons.shopping_cart_outlined, Icons.favorite, Icons.school_outlined,
+    Icons.water, Icons.movie, Icons.phone_android_outlined, Icons.directions_bus_outlined,
+    Icons.wallet_giftcard, Icons.work_outline, Icons.home_outlined,
+    Icons.sports_tennis, Icons.child_care_rounded, Icons.wallet_outlined
   ];
 
   final List<int> backgroundColors = const [

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:drift/drift.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:naspend/data/datasources/local/database.dart';
 import 'package:naspend/data/model/transaction_with_category.dart';
@@ -85,7 +86,7 @@ class NoteViewModel extends ChangeNotifier {
   }
 
   Future<void> saveTransaction({required TransactionType type}) async {
-    final amountText = amountController.text.trim();
+    final amountText = amountController.text.replaceAll(RegExp(r'[^0-9]'), '');
     if (amountText.isEmpty) throw Exception('Vui lòng nhập số tiền.');
     final amount = double.tryParse(amountText);
     if (amount == null || amount <= 0) throw Exception('Số tiền không hợp lệ.');
@@ -116,7 +117,62 @@ class NoteViewModel extends ChangeNotifier {
     }
   }
 
-  Future<void> deleteTransaction() => _database.deleteTransaction(initialTransaction!.transaction.id);
+  Future<void> deleteTransaction(BuildContext context) async {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Xác nhận xóa'),
+          content: const Text('Bạn có chắc chắn muốn xóa giao dịch này không?'),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Hủy'),
+              onPressed: () {
+                context.pop(false);
+              },
+            ),
+            FilledButton.tonal(
+              style: FilledButton.styleFrom(
+                backgroundColor: colors.errorContainer,
+                foregroundColor: colors.onErrorContainer,
+              ),
+              child: const Text('Xóa'),
+              onPressed: () {
+                context.pop(true);
+              },
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed == true) {
+      try {
+        await _database.deleteTransaction(initialTransaction!.transaction.id);
+        if (context.mounted) {
+          context.pop();
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Đã xóa giao dịch thành công!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Lỗi: ${e.toString().replaceAll('Exception: ', '')}'),
+              backgroundColor: Theme.of(context).colorScheme.error,
+            ),
+          );
+        }
+      }
+    }
+  }
 
   @override
   void dispose() {

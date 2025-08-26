@@ -10,6 +10,7 @@ import 'package:naspend/ui/dashboard/view_model/dashboard_view_model.dart';
 import 'package:naspend/ui/home/view/home_screen.dart';
 import 'package:naspend/ui/home/view_model/home_view_model.dart';
 import 'package:naspend/ui/note/view_model/note_view_model.dart';
+import 'package:naspend/ui/setting/view_model/setting_view_model.dart';
 import 'package:naspend/ui/setting/view_model/theme_settings_view_model.dart';
 import 'package:provider/provider.dart';
 
@@ -33,6 +34,9 @@ void main() {
           context.read<AppDatabase>(),
         )),
         ChangeNotifierProvider(create: (context) => CalendarViewModel(
+          context.read<AppDatabase>(),
+        )),
+        ChangeNotifierProvider(create: (context) => SettingViewModel(
           context.read<AppDatabase>(),
         )),
       ],

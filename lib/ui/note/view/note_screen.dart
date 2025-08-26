@@ -1,4 +1,6 @@
+import 'package:currency_text_input_formatter/currency_text_input_formatter.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:naspend/core/router/app_routes.dart';
 import 'package:naspend/data/datasources/local/database.dart';
@@ -72,47 +74,7 @@ class NoteScreen extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.delete),
             onPressed: () async {
-              final confirm = await showDialog<bool>(
-                context: context,
-                builder: (context) => AlertDialog(
-                  title: const Text('Xác nhận xóa'),
-                  content: const Text('Bạn có chắc chắn muốn xóa giao dịch này không?'),
-                  actions: [
-                    TextButton(
-                      onPressed: () => context.pop(false),
-                      child: const Text('Hủy'),
-                    ),
-                    TextButton(
-                      onPressed: () => context.pop(true),
-                      child: Text('Xóa', style: fonts.labelLarge!.copyWith(color: colors.error)),
-                    ),
-                  ],
-                ),
-              );
-
-              if (confirm == true) {
-                try {
-                  await viewModel.deleteTransaction();
-                  if (context.mounted) {
-                    context.pop();
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Đã xóa giao dịch thành công!'),
-                        backgroundColor: Colors.green,
-                      ),
-                    );
-                  }
-                } catch (e) {
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Lỗi: ${e.toString().replaceAll('Exception: ', '')}'),
-                        backgroundColor: Theme.of(context).colorScheme.error,
-                      ),
-                    );
-                  }
-                }
-              }
+              viewModel.deleteTransaction(context);
             },
           ),
         ],
@@ -189,29 +151,23 @@ class NoteScreen extends StatelessWidget {
                       const Divider(),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: smallSpacing, vertical: 5.0),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: TextField(
-                                controller: viewModel.amountController,
-                                keyboardType: TextInputType.number,
-                                decoration: InputDecoration(
-                                  prefixIcon: const Icon(Icons.monetization_on_outlined),
-                                  suffixIcon: ClearButton(controller: viewModel.amountController),
-                                  labelText: 'Tiền ${type == TransactionType.expense ? 'chi' : 'thu'}',
-                                  hintText: '0',
-                                  border: const OutlineInputBorder(),
-                                ),
-                              ),
-                            ),
-                            rowDivider,
-                            Text(
-                              'đ',
-                              style: fonts.titleLarge!.copyWith(
-                                color: colors.onSurface,
-                              ),
+                        child: TextField(
+                          controller: viewModel.amountController,
+                          keyboardType: TextInputType.number,
+                          inputFormatters: <TextInputFormatter>[
+                            CurrencyTextInputFormatter.currency(
+                              locale: 'vi',
+                              decimalDigits: 0,
+                              symbol: 'đ',
                             )
                           ],
+                          decoration: InputDecoration(
+                            prefixIcon: const Icon(Icons.monetization_on_outlined),
+                            suffixIcon: ClearButton(controller: viewModel.amountController),
+                            labelText: 'Tiền ${type == TransactionType.expense ? 'chi' : 'thu'}',
+                            hintText: '0',
+                            border: const OutlineInputBorder(),
+                          ),
                         ),
                       ),
                     ],

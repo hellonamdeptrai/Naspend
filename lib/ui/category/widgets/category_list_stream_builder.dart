@@ -52,7 +52,7 @@ class CategoryListStreamBuilder extends StatelessWidget {
               trailing: IconButton(
                 icon: const Icon(Icons.delete_outline, color: Colors.grey),
                 onPressed: () {
-                  viewModel.deleteCategory(category.id);
+                  viewModel.deleteCategory(context, category.id);
                 },
               ),
             );

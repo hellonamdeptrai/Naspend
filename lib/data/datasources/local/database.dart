@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
+import 'package:flutter/material.dart' as material;
 import 'package:naspend/data/model/monthly_total.dart';
 import 'package:naspend/data/model/transaction_with_category.dart';
 import 'package:path_provider/path_provider.dart';
@@ -42,6 +43,21 @@ class AppDatabase extends _$AppDatabase {
 
   @override
   int get schemaVersion => 1;
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+    onCreate: (Migrator m) async {
+      await m.createAll();
+
+      await _addDefaultCategories(this);
+    },
+    onUpgrade: (Migrator m, int from, int to) async {
+
+    },
+    beforeOpen: (details) async {
+
+    },
+  );
 
   // == CÁC TRUY VẤN CHO TRANSACTIONS ==
 
@@ -142,6 +158,15 @@ class AppDatabase extends _$AppDatabase {
     ).watch();
   }
 
+  Future<void> deleteAllData() {
+    return transaction(() async {
+      await delete(transactions).go();
+      await delete(categories).go();
+
+      await _addDefaultCategories(this);
+    });
+  }
+
   static QueryExecutor _openConnection() {
     return driftDatabase(
       name: 'my_database',
@@ -150,4 +175,67 @@ class AppDatabase extends _$AppDatabase {
       ),
     );
   }
+}
+
+Future<void> _addDefaultCategories(AppDatabase db) async {
+  await db.batch((batch) {
+    batch.insertAll(db.categories, [
+      CategoriesCompanion.insert(
+        name: 'Ăn uống',
+        iconCodePoint: material.Icons.fastfood_outlined.codePoint,
+        iconColorValue: 0xff2354C7,
+        backgroundColorValue: 0xffECEFFD,
+        type: 0,
+      ),
+      CategoriesCompanion.insert(
+        name: 'Mua sắm',
+        iconCodePoint: material.Icons.shopping_cart_outlined.codePoint,
+        iconColorValue: 0xff417345,
+        backgroundColorValue: 0xffE5F4E0,
+        type: 0,
+      ),
+      CategoriesCompanion.insert(
+        name: 'Y tế',
+        iconCodePoint: material.Icons.medical_information_outlined.codePoint,
+        iconColorValue: 0xffA44D2A,
+        backgroundColorValue: 0xffFAEDE7,
+        type: 0,
+      ),
+      CategoriesCompanion.insert(
+        name: 'Tiền nhà',
+        iconCodePoint: material.Icons.home_outlined.codePoint,
+        iconColorValue: 0xff806C2A,
+        backgroundColorValue: 0xffFAEEDF,
+        type: 0,
+      ),
+      CategoriesCompanion.insert(
+        name: 'Phí liên lạc',
+        iconCodePoint: material.Icons.phone_android_outlined.codePoint,
+        iconColorValue: 0xff417345,
+        backgroundColorValue: 0xffE5F4E0,
+        type: 0,
+      ),
+      CategoriesCompanion.insert(
+        name: 'Tiền lương',
+        iconCodePoint: material.Icons.wallet_outlined.codePoint,
+        iconColorValue: 0xff417345,
+        backgroundColorValue: 0xffE5F4E0,
+        type: 1,
+      ),
+      CategoriesCompanion.insert(
+        name: 'Tiền thưởng',
+        iconCodePoint: material.Icons.wallet_giftcard.codePoint,
+        iconColorValue: 0xff2354C7,
+        backgroundColorValue: 0xffECEFFD,
+        type: 1,
+      ),
+      CategoriesCompanion.insert(
+        name: 'Đầu tư',
+        iconCodePoint: material.Icons.favorite.codePoint,
+        iconColorValue: 0xffA44D2A,
+        backgroundColorValue: 0xffFAEDE7,
+        type: 1,
+      ),
+    ].map((c) => c.copyWith(isActive: const Value(true))));
+  });
 }
