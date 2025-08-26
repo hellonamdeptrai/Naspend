@@ -6,8 +6,6 @@
 
 ## Demo & Hình ảnh ứng dụng
 
-*(**Lưu ý:** Hãy thay thế các liên kết ảnh bên dưới bằng ảnh chụp màn hình thực tế của ứng dụng bạn.)*
-
 | Dashboard | Lịch Giao Dịch | Ghi Chép Giao Dịch |
 | :---: | :---: | :---: |
 | <img width="1080" height="2400" alt="Image" src="https://github.com/user-attachments/assets/625a3ed1-2514-4c73-b093-10c7cd875d77" /> | <img width="1080" height="2400" alt="Image" src="https://github.com/user-attachments/assets/7538b2de-e76b-441c-bf4f-d2571269b695" /> | <img width="1080" height="2400" alt="Image" src="https://github.com/user-attachments/assets/ae031c1e-c960-4ece-89d0-818517fd3e14" /> |
