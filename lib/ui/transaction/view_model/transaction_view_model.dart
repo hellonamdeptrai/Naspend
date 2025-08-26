@@ -10,6 +10,9 @@ class TransactionViewModel extends ChangeNotifier {
   final int categoryId;
   DateTime _currentYear;
 
+  StreamSubscription? _monthlyTotalsSubscription;
+  StreamSubscription? _transactionSubscription;
+
   TransactionViewModel(this._database, {
     required this.categoryId,
     required DateTime initialDate,
@@ -24,7 +27,6 @@ class TransactionViewModel extends ChangeNotifier {
   List<MonthlyTotal> _monthlyTotals = [];
   List<Transaction> _transactionsForSelectedMonth = [];
   int? _selectedMonth; // Lưu tháng đang được chọn (1-12)
-  StreamSubscription? _transactionSubscription;
 
   // --- Getters ---
   bool get isLoading => _isLoading;
@@ -44,20 +46,28 @@ class TransactionViewModel extends ChangeNotifier {
     notifyListeners();
 
     _category = await _database.getCategoryById(categoryId);
-    _monthlyTotals = await _database.getMonthlyTotalsForCategory(categoryId, _currentYear.year);
 
-    final allMonths = List.generate(12, (index) {
-      final month = index + 1;
-      final existingTotal = _monthlyTotals.firstWhere((mt) => mt.month == month, orElse: () => MonthlyTotal(month: month, total: 0));
-      return existingTotal;
-    });
-    _monthlyTotals = allMonths;
+    _listenToMonthlyTotals();
 
-    // Bắt đầu lắng nghe stream giao dịch
     _listenToTransactions();
 
     _isLoading = false;
-    notifyListeners();
+  }
+
+  void _listenToMonthlyTotals() {
+    _monthlyTotalsSubscription?.cancel();
+    _monthlyTotalsSubscription = _database
+        .watchMonthlyTotalsForCategory(categoryId, _currentYear.year)
+        .listen((rawTotals) {
+      // Logic xử lý dữ liệu (giống hàm _prepareChartData cũ)
+      final totalsMap = { for (var total in rawTotals) total.month : total.total };
+      final allMonthsData = List.generate(12, (index) {
+        final month = index + 1;
+        return MonthlyTotal(month: month, total: totalsMap[month] ?? 0.0);
+      });
+      _monthlyTotals = allMonthsData;
+      notifyListeners(); // Cập nhật UI
+    });
   }
 
   void _listenToTransactions() {
@@ -99,6 +109,7 @@ class TransactionViewModel extends ChangeNotifier {
   @override
   void dispose() {
     _transactionSubscription?.cancel();
+    _monthlyTotalsSubscription?.cancel();
     super.dispose();
   }
 }

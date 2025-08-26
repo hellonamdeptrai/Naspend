@@ -63,11 +63,12 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   PreferredSizeWidget _createAppBar(ThemeSettingsViewModel themeVM) {
     final homeVM = context.read<HomeViewModel>();
     return AppBar(
-      title: const Text('Naspend - Sổ thu chi'),
+      title: const Text('Naspend - Sổ Thu Chi'),
       actions: !homeVM.showMediumSizeLayout && !homeVM.showLargeSizeLayout
           ? [
         BrightnessButton(
-          handleBrightnessChange: themeVM.handleBrightnessChange,
+          currentThemeMode: themeVM.themeMode,
+          cycleThemeMode: themeVM.cycleThemeMode,
         ),
         ColorSeedButton(
           handleColorSelect: themeVM.handleColorSelect,
@@ -83,7 +84,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     children: [
       Flexible(
         child: BrightnessButton(
-          handleBrightnessChange: themeVM.handleBrightnessChange,
+          currentThemeMode: themeVM.themeMode,
+          cycleThemeMode: themeVM.cycleThemeMode,
           showTooltipBelow: false,
         ),
       ),
@@ -124,8 +126,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 padding: const EdgeInsets.only(bottom: 20),
                 child: homeVM.showLargeSizeLayout
                     ? ExpandedTrailingActions(
-                  useLightMode: themeVM.useLightMode,
-                  handleBrightnessChange: themeVM.handleBrightnessChange,
+                  currentThemeMode: themeVM.themeMode,
+                  handleThemeModeChange: themeVM.handleThemeModeChange,
                   handleColorSelect: themeVM.handleColorSelect,
                   colorSelected: themeVM.colorSelected,
                 )

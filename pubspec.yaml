@@ -51,6 +51,9 @@ dependencies:
   currency_text_input_formatter: ^2.3.0
   flutter_local_notifications: ^19.4.1
   timezone: ^0.10.1
+  rename: ^3.1.0
+  flutter_launcher_icons: ^0.14.4
+  shared_preferences: ^2.5.3
 
 dev_dependencies:
   flutter_test:

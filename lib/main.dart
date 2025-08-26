@@ -14,7 +14,12 @@ import 'package:naspend/ui/setting/view_model/setting_view_model.dart';
 import 'package:naspend/ui/setting/view_model/theme_settings_view_model.dart';
 import 'package:provider/provider.dart';
 
-void main() {
+void main() async  {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  final themeVM = ThemeSettingsViewModel();
+  await themeVM.init();
+
   runApp(
     MultiProvider(
       providers: [
@@ -22,7 +27,7 @@ void main() {
           create: (_) => AppDatabase(),
           dispose: (_, db) => db.close(),
         ),
-        ChangeNotifierProvider(create: (_) => ThemeSettingsViewModel()),
+        ChangeNotifierProvider.value(value: themeVM),
         ChangeNotifierProvider(create: (_) => HomeViewModel()),
         ChangeNotifierProvider(create: (context) => DashboardViewModel(
           context.read<AppDatabase>(),

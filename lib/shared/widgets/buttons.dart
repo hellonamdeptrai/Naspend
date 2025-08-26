@@ -4,25 +4,45 @@ import 'package:naspend/core/constants/app_constants.dart';
 class BrightnessButton extends StatelessWidget {
   const BrightnessButton({
     super.key,
-    required this.handleBrightnessChange,
+    required this.currentThemeMode,
+    required this.cycleThemeMode,
     this.showTooltipBelow = true,
   });
 
-  final void Function(bool useLightMode) handleBrightnessChange;
+  final ThemeMode currentThemeMode;
+  final VoidCallback cycleThemeMode;
   final bool showTooltipBelow;
+
+  Icon _buildIcon() {
+    switch (currentThemeMode) {
+      case ThemeMode.light:
+        return const Icon(Icons.light_mode_outlined);
+      case ThemeMode.dark:
+        return const Icon(Icons.dark_mode_outlined);
+      case ThemeMode.system:
+        return const Icon(Icons.brightness_auto_outlined); // Icon cho chế độ hệ thống
+    }
+  }
+
+  String _buildTooltip() {
+    switch (currentThemeMode) {
+      case ThemeMode.light:
+        return 'Chuyển sang Giao diện Tối';
+      case ThemeMode.dark:
+        return 'Chuyển sang Giao diện Hệ thống';
+      case ThemeMode.system:
+        return 'Chuyển sang Giao diện Sáng';
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final isBright = Theme.of(context).brightness == Brightness.light;
     return Tooltip(
       preferBelow: showTooltipBelow,
-      message: 'Chuyển đổi giao diện',
+      message: _buildTooltip(),
       child: IconButton(
-        icon:
-            isBright
-                ? const Icon(Icons.dark_mode_outlined)
-                : const Icon(Icons.light_mode_outlined),
-        onPressed: () => handleBrightnessChange(!isBright),
+        icon: _buildIcon(),
+        onPressed: cycleThemeMode,
       ),
     );
   }

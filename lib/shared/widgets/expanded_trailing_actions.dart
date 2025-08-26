@@ -5,17 +5,16 @@ import 'package:naspend/shared/widgets/expanded_color_seed_action.dart';
 class ExpandedTrailingActions extends StatelessWidget {
   const ExpandedTrailingActions({
     super.key,
-    required this.useLightMode,
-    required this.handleBrightnessChange,
+    required this.currentThemeMode,
+    required this.handleThemeModeChange,
     required this.handleColorSelect,
     required this.colorSelected,
   });
 
-  final void Function(bool) handleBrightnessChange;
+  final ThemeMode currentThemeMode;
+  final void Function(ThemeMode) handleThemeModeChange;
+
   final void Function(int) handleColorSelect;
-
-  final bool useLightMode;
-
   final ColorSeed colorSelected;
 
   @override
@@ -28,17 +27,27 @@ class ExpandedTrailingActions extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.end,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Row(
-            children: [
-              const Text('Giao diện'),
-              Expanded(child: Container()),
-              Switch(
-                value: useLightMode,
-                onChanged: (value) {
-                  handleBrightnessChange(value);
-                },
+          const Text('Giao diện'),
+          const SizedBox(height: 8),
+          SegmentedButton<ThemeMode>(
+            segments: const <ButtonSegment<ThemeMode>>[
+              ButtonSegment<ThemeMode>(
+                value: ThemeMode.light,
+                icon: Icon(Icons.light_mode_outlined),
+              ),
+              ButtonSegment<ThemeMode>(
+                value: ThemeMode.dark,
+                icon: Icon(Icons.dark_mode_outlined),
+              ),
+              ButtonSegment<ThemeMode>(
+                value: ThemeMode.system,
+                icon: Icon(Icons.brightness_auto_outlined),
               ),
             ],
+            selected: <ThemeMode>{currentThemeMode},
+            onSelectionChanged: (Set<ThemeMode> newSelection) {
+              handleThemeModeChange(newSelection.first);
+            },
           ),
           const Divider(),
           ExpandedColorSeedAction(

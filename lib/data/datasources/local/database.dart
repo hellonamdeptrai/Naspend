@@ -129,7 +129,7 @@ class AppDatabase extends _$AppDatabase {
     return (select(categories)..where((tbl) => tbl.id.equals(id))).getSingleOrNull();
   }
 
-  Future<List<MonthlyTotal>> getMonthlyTotalsForCategory(int categoryId, int year) {
+  Stream<List<MonthlyTotal>> watchMonthlyTotalsForCategory(int categoryId, int year) {
     final month = transactions.transactionDate.month;
     final totalAmount = transactions.amount.sum();
 
@@ -144,12 +144,12 @@ class AppDatabase extends _$AppDatabase {
         month: row.read(month)!,
         total: row.read(totalAmount) ?? 0.0,
       );
-    }).get();
+    }).watch();
   }
 
   Stream<List<Transaction>> watchTransactionsForCategoryInSpecificMonth(int categoryId, DateTime monthDate) {
-    final startOfMonth = DateTime(monthDate.year, monthDate.month, 1);
-    final endOfMonth = DateTime(monthDate.year, monthDate.month + 1, 0, 23, 59, 59);
+    final startOfMonth = DateTime.utc(monthDate.year, monthDate.month, 1);
+    final endOfMonth = DateTime.utc(monthDate.year, monthDate.month + 1, 1).subtract(const Duration(milliseconds: 1));
 
     return (select(transactions)
       ..where((tbl) => tbl.categoryId.equals(categoryId))

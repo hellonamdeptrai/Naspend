@@ -92,12 +92,18 @@ class NoteViewModel extends ChangeNotifier {
     if (amount == null || amount <= 0) throw Exception('Số tiền không hợp lệ.');
     if (_selectedCard == null) throw Exception('Vui lòng chọn một danh mục.');
 
+    final selectedDateUtc = DateTime.utc(
+      _selectedDate.year,
+      _selectedDate.month,
+      _selectedDate.day,
+    );
+
     if (isEditMode) {
       // --- CHẾ ĐỘ SỬA ---
       final updatedTransaction = TransactionsCompanion(
         id: Value(initialTransaction!.transaction.id),
         amount: Value(amount),
-        transactionDate: Value(_selectedDate),
+        transactionDate: Value(selectedDateUtc),
         note: Value(noteController.text.trim()),
         categoryId: Value(_selectedCard!.id),
         type: Value(initialTransaction!.transaction.type), // Giữ nguyên type
@@ -107,7 +113,7 @@ class NoteViewModel extends ChangeNotifier {
       // --- CHẾ ĐỘ THÊM MỚI ---
       final newTransaction = TransactionsCompanion(
         amount: Value(amount),
-        transactionDate: Value(_selectedDate),
+        transactionDate: Value(selectedDateUtc),
         note: Value(noteController.text.trim()),
         categoryId: Value(_selectedCard!.id),
         type: Value(type),
