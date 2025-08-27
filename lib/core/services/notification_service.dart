@@ -12,7 +12,7 @@ class NotificationService {
   Future<void> init() async {
     // Khởi tạo cài đặt cho Android
     const AndroidInitializationSettings initializationSettingsAndroid =
-    AndroidInitializationSettings('@mipmap/ic_launcher');
+    AndroidInitializationSettings('@mipmap/launcher_icon');
 
     // Khởi tạo cài đặt cho iOS (cần yêu cầu quyền)
     final DarwinInitializationSettings initializationSettingsIOS =

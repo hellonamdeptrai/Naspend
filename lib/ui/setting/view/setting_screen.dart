@@ -26,7 +26,7 @@ class SettingScreen extends StatelessWidget {
                   title: const Text('Nhắc nhở hàng ngày'),
                   subtitle: const Text('Nhận thông báo để ghi chép chi tiêu'),
                   value: viewModel.notificationsEnabled,
-                  onChanged: viewModel.toggleNotifications,
+                  onChanged: (value) => viewModel.toggleNotifications(value),
                   secondary: const Icon(Icons.notifications_active_outlined),
                 ),
                 if (viewModel.notificationsEnabled)
